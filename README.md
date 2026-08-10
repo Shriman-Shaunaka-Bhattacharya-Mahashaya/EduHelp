@@ -35,7 +35,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository** (if you haven't already):
    ```bash
    git clone <your-github-repo-url>
-   cd exam-system
+   cd EduHelp
    ```
 
 2. **Install dependencies**:
