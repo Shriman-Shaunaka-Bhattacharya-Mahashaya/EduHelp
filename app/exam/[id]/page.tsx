@@ -14,15 +14,75 @@ export default function ExamPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // Array of { questionIndex, selectedOptionIndex, timeTaken }
   const [answers, setAnswers] = useState<any[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [examEndTime, setExamEndTime] = useState<number | null>(null);
+
+  // Proctoring States
+  const [strikes, setStrikes] = useState<number>(0);
+  const [warningMessage, setWarningMessage] = useState("");
 
   // To track time per question
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const answersRef = useRef<any[]>([]);
+
+  // 1. Lockdown Hooks (Copy, Paste, ContextMenu, Keydown)
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    
+    const blockInteractions = (e: any) => e.preventDefault();
+    const blockKeys = (e: KeyboardEvent) => {
+      // Block Ctrl+C, Ctrl+V, Ctrl+S, Ctrl+P, Ctrl+A
+      if (e.ctrlKey || e.metaKey) {
+        if (['c','v','s','p','a'].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener('contextmenu', blockInteractions);
+    window.addEventListener('copy', blockInteractions);
+    window.addEventListener('cut', blockInteractions);
+    window.addEventListener('paste', blockInteractions);
+    window.addEventListener('keydown', blockKeys);
+
+    return () => {
+      window.removeEventListener('contextmenu', blockInteractions);
+      window.removeEventListener('copy', blockInteractions);
+      window.removeEventListener('cut', blockInteractions);
+      window.removeEventListener('paste', blockInteractions);
+      window.removeEventListener('keydown', blockKeys);
+    };
+  }, [status]);
+
+  // 2. Visibility / Tab Switch Hook
+  useEffect(() => {
+    if (status !== "authenticated" || !examData || isSubmitting) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && !isSubmittingRef.current) {
+        const cachedStrikes = parseInt(localStorage.getItem(`exam_strikes_${examId}`) || '0');
+        const newStrikes = cachedStrikes + 1;
+        
+        localStorage.setItem(`exam_strikes_${examId}`, newStrikes.toString());
+        setStrikes(newStrikes);
+
+        if (newStrikes >= 3) {
+          setWarningMessage("Exam auto-submitted due to repeated tab switching.");
+          handleSubmitExam();
+        } else {
+          setWarningMessage(`Warning ${newStrikes}/2: Tab switching is strictly prohibited. Your exam will be auto-submitted on the next violation.`);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [status, examData, isSubmitting]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -36,6 +96,10 @@ export default function ExamPage() {
   }, [status]);
 
   const startExam = async () => {
+    // Check cached strikes
+    const cachedStrikes = parseInt(localStorage.getItem(`exam_strikes_${examId}`) || '0');
+    setStrikes(cachedStrikes);
+
     // 1. Check local progress first
     const cached = localStorage.getItem(`exam_progress_${examId}`);
     if (cached) {
@@ -44,7 +108,7 @@ export default function ExamPage() {
         setExamData(parsed.examData);
         setAnswers(parsed.answers);
         answersRef.current = parsed.answers;
-        setTimeLeft(parsed.timeLeft);
+        setExamEndTime(parsed.examEndTime);
         setCurrentQuestionIdx(parsed.currentQuestionIdx);
         setQuestionStartTime(parsed.questionStartTime);
         setIsLoading(false);
@@ -68,7 +132,7 @@ export default function ExamPage() {
 
       setExamData(data.examDetails);
       const duration = data.examDetails?.durationMinutes || 60;
-      setTimeLeft(duration * 60); // in seconds
+      setExamEndTime(Date.now() + (duration * 60 * 1000)); // Absolute End Time
 
       // Initialize answers array
       const initialAnswers = data.examDetails.questions.map((_: any, idx: number) => ({
@@ -88,19 +152,21 @@ export default function ExamPage() {
   };
 
   useEffect(() => {
-    if (timeLeft === null || isSubmitting) return;
-
-    if (timeLeft <= 0) {
-      handleSubmitExam(); // Auto submit
-      return;
-    }
+    if (examEndTime === null || isSubmitting) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => (prev !== null ? prev - 1 : null));
+      const now = Date.now();
+      const remaining = Math.max(0, Math.floor((examEndTime - now) / 1000));
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(timer);
+        handleSubmitExam(); // Auto submit
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isSubmitting]);
+  }, [examEndTime, isSubmitting]);
 
   // Sync state to local storage continuously
   useEffect(() => {
@@ -108,12 +174,12 @@ export default function ExamPage() {
       localStorage.setItem(`exam_progress_${examId}`, JSON.stringify({
         examData,
         answers: answersRef.current,
-        timeLeft,
+        examEndTime,
         currentQuestionIdx,
         questionStartTime
       }));
     }
-  }, [examData, answers, timeLeft, currentQuestionIdx, questionStartTime, isSubmitting]);
+  }, [examData, answers, examEndTime, currentQuestionIdx, questionStartTime, isSubmitting]);
 
   const updateTimeTaken = () => {
     const now = Date.now();
@@ -158,8 +224,9 @@ export default function ExamPage() {
   };
 
   const handleSubmitExam = async () => {
-    if (isSubmitting) return;
+    if (isSubmittingRef.current) return;
     setIsSubmitting(true);
+    isSubmittingRef.current = true;
 
     // Synchronously calculate final answers array to avoid React batching delay
     const now = Date.now();
@@ -170,13 +237,14 @@ export default function ExamPage() {
         : ans
     );
 
-    updateTimeTaken(); // Still update UI state for completeness
+    updateTimeTaken();
 
     try {
       // Save pending sync state locally first
       const syncData = { examId, answers: finalAnswers };
       localStorage.setItem(`exam_sync_${examId}`, JSON.stringify(syncData));
       localStorage.removeItem(`exam_progress_${examId}`); // Clear active progress
+      localStorage.removeItem(`exam_strikes_${examId}`); // Clear strikes upon successful submit
 
       const res = await fetch("/api/student/exams/attempt", {
         method: "POST",
@@ -189,19 +257,21 @@ export default function ExamPage() {
       });
       
       if (res.ok) {
-        // Successfully synced immediately
         localStorage.removeItem(`exam_sync_${examId}`);
       }
     } catch (err: any) {
-      // Offline or network error - silently handle and allow redirect
       console.warn("Offline submit: Saved locally for background sync.");
     } finally {
-      // Always redirect back to dashboard without blocking the user
-      router.push("/dashboard");
+      // If we are auto-submitting from a 3rd strike, the overlay will handle the redirect.
+      // Otherwise, redirect immediately.
+      if (!warningMessage || !warningMessage.includes("auto-submitted")) {
+        router.push("/dashboard");
+      }
     }
   };
 
   const formatTime = (seconds: number) => {
+    if (seconds < 0) return "00:00";
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
@@ -227,7 +297,23 @@ export default function ExamPage() {
   const currentAnswer = answers[currentQuestionIdx];
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', userSelect: 'none', WebkitUserSelect: 'none' }}>
+      
+      {/* Warning Overlay */}
+      {warningMessage && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#1e1e1e', padding: '3rem', borderRadius: '1rem', border: '2px solid var(--danger)', maxWidth: '500px', textAlign: 'center' }}>
+            <h2 style={{ color: 'var(--danger)', fontSize: '2rem', marginBottom: '1rem' }}>⚠️ Warning</h2>
+            <p style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '2rem' }}>{warningMessage}</p>
+            {!warningMessage.includes("auto-submitted") ? (
+              <button className="btn-primary" onClick={() => setWarningMessage("")}>I Understand</button>
+            ) : (
+              <button className="btn-primary" onClick={() => router.push('/dashboard')}>Return to Dashboard</button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: '1rem', zIndex: 10, marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{examData.courseName}</h1>
