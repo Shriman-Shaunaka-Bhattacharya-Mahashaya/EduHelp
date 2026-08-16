@@ -16,11 +16,11 @@ export default function StudentDashboard() {
     try {
       const res = await fetch("/api/student/exams/available");
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || "Failed to fetch exams");
       }
-      
+
       setAvailableExams(data.available);
       setGivenExams(data.given);
     } catch (err: any) {
@@ -32,6 +32,37 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     fetchExams();
+
+    // Background sync for offline exams
+    const syncOfflineExams = async () => {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('exam_sync_')) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key) || '{}');
+            const res = await fetch("/api/student/exams/attempt", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ 
+                examId: data.examId, 
+                action: "submit", 
+                answers: data.answers 
+              }),
+            });
+            if (res.ok) {
+              localStorage.removeItem(key);
+              fetchExams(); // Refresh dashboard data
+            }
+          } catch (e) {
+            // Silently ignore if still offline
+          }
+        }
+      }
+    };
+    
+    syncOfflineExams();
+    window.addEventListener('online', syncOfflineExams);
+    return () => window.removeEventListener('online', syncOfflineExams);
   }, []);
 
   const handleStartExam = async (examId: string) => {
@@ -44,14 +75,14 @@ export default function StudentDashboard() {
         body: JSON.stringify({ examId, action: 'start' }),
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         if (data.message && data.message.includes('Login window of 15 minutes has passed')) {
           setAvailableExams(prev => prev.map(e => e._id === examId ? { ...e, isExpired: true } : e));
         }
         throw new Error(data.message || "Failed to start exam");
       }
-      
+
       // Store exam details in localStorage/sessionStorage for the exam page if needed
       // Or just rely on the API. The exam page can fetch it if needed, or we just pass via query/context.
       // But we already get examDetails here.
@@ -100,7 +131,7 @@ export default function StudentDashboard() {
           <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}><div className="spinner"></div></div>
         ) : activeTab === "available" ? (
           availableExams.length === 0 ? (
-             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>No exams currently available.</div>
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>No exams currently available.</div>
           ) : (
             <div style={{ display: 'grid', gap: '1rem' }}>
               {availableExams.map((exam) => (
@@ -117,12 +148,12 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     {exam.isUpcoming ? (
-                       <button className="btn-outline" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>Upcoming</button>
+                      <button className="btn-outline" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>Upcoming</button>
                     ) : exam.isExpired ? (
-                       <button className="btn-outline" disabled style={{ opacity: 0.7, cursor: 'not-allowed', color: 'var(--danger)', borderColor: 'var(--danger)' }}>Login Window Passed</button>
+                      <button className="btn-outline" disabled style={{ opacity: 0.7, cursor: 'not-allowed', color: 'var(--danger)', borderColor: 'var(--danger)' }}>Login Window Passed</button>
                     ) : (
-                      <button 
-                        className="btn-primary" 
+                      <button
+                        className="btn-primary"
                         onClick={() => handleStartExam(exam._id)}
                         disabled={startLoading === exam._id}
                       >
@@ -136,7 +167,7 @@ export default function StudentDashboard() {
           )
         ) : (
           givenExams.length === 0 ? (
-             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>You haven't taken any exams yet.</div>
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>You haven't taken any exams yet.</div>
           ) : (
             <div style={{ display: 'grid', gap: '1rem' }}>
               {givenExams.map((exam) => (
@@ -152,8 +183,8 @@ export default function StudentDashboard() {
                       {exam.attempt.score} / {exam.questions.length}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Score</div>
-                    <button 
-                      className="btn-outline" 
+                    <button
+                      className="btn-outline"
                       style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}
                       onClick={() => router.push(`/student/review/${exam.attempt._id}`)}
                     >

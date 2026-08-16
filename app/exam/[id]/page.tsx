@@ -9,16 +9,16 @@ export default function ExamPage() {
   const params = useParams();
   const examId = params.id as string;
   const { data: session, status } = useSession();
-  
+
   const [examData, setExamData] = useState<any>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Array of { questionIndex, selectedOptionIndex, timeTaken }
   const [answers, setAnswers] = useState<any[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  
+
   // To track time per question
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
@@ -36,6 +36,24 @@ export default function ExamPage() {
   }, [status]);
 
   const startExam = async () => {
+    // 1. Check local progress first
+    const cached = localStorage.getItem(`exam_progress_${examId}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setExamData(parsed.examData);
+        setAnswers(parsed.answers);
+        answersRef.current = parsed.answers;
+        setTimeLeft(parsed.timeLeft);
+        setCurrentQuestionIdx(parsed.currentQuestionIdx);
+        setQuestionStartTime(parsed.questionStartTime);
+        setIsLoading(false);
+        return;
+      } catch (e) {
+        // Fallback to fetch if parse fails
+      }
+    }
+
     try {
       const res = await fetch("/api/student/exams/attempt", {
         method: "POST",
@@ -47,11 +65,11 @@ export default function ExamPage() {
       if (!res.ok) {
         throw new Error(data.message || "Failed to load exam");
       }
-      
+
       setExamData(data.examDetails);
       const duration = data.examDetails?.durationMinutes || 60;
       setTimeLeft(duration * 60); // in seconds
-      
+
       // Initialize answers array
       const initialAnswers = data.examDetails.questions.map((_: any, idx: number) => ({
         questionIndex: idx,
@@ -60,7 +78,7 @@ export default function ExamPage() {
       }));
       setAnswers(initialAnswers);
       answersRef.current = initialAnswers;
-      
+
       setQuestionStartTime(Date.now());
     } catch (err: any) {
       setError(err.message);
@@ -84,10 +102,23 @@ export default function ExamPage() {
     return () => clearInterval(timer);
   }, [timeLeft, isSubmitting]);
 
+  // Sync state to local storage continuously
+  useEffect(() => {
+    if (examData && !isSubmitting) {
+      localStorage.setItem(`exam_progress_${examId}`, JSON.stringify({
+        examData,
+        answers: answersRef.current,
+        timeLeft,
+        currentQuestionIdx,
+        questionStartTime
+      }));
+    }
+  }, [examData, answers, timeLeft, currentQuestionIdx, questionStartTime, isSubmitting]);
+
   const updateTimeTaken = () => {
     const now = Date.now();
     const timeSpent = Math.floor((now - questionStartTime) / 1000);
-    
+
     setAnswers(prev => {
       const newAnswers = [...prev];
       newAnswers[currentQuestionIdx] = {
@@ -129,12 +160,12 @@ export default function ExamPage() {
   const handleSubmitExam = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    
+
     // Synchronously calculate final answers array to avoid React batching delay
     const now = Date.now();
     const timeSpent = Math.floor((now - questionStartTime) / 1000);
-    const finalAnswers = answersRef.current.map((ans, idx) => 
-      idx === currentQuestionIdx 
+    const finalAnswers = answersRef.current.map((ans, idx) =>
+      idx === currentQuestionIdx
         ? { ...ans, timeTaken: ans.timeTaken + timeSpent }
         : ans
     );
@@ -142,6 +173,11 @@ export default function ExamPage() {
     updateTimeTaken(); // Still update UI state for completeness
 
     try {
+      // Save pending sync state locally first
+      const syncData = { examId, answers: finalAnswers };
+      localStorage.setItem(`exam_sync_${examId}`, JSON.stringify(syncData));
+      localStorage.removeItem(`exam_progress_${examId}`); // Clear active progress
+
       const res = await fetch("/api/student/exams/attempt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,17 +187,17 @@ export default function ExamPage() {
           answers: finalAnswers 
         }),
       });
-      const data = await res.json();
       
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to submit exam");
+      if (res.ok) {
+        // Successfully synced immediately
+        localStorage.removeItem(`exam_sync_${examId}`);
       }
-      
-      // Success, go to dashboard
-      router.push("/dashboard");
     } catch (err: any) {
-      alert(err.message);
-      setIsSubmitting(false);
+      // Offline or network error - silently handle and allow redirect
+      console.warn("Offline submit: Saved locally for background sync.");
+    } finally {
+      // Always redirect back to dashboard without blocking the user
+      router.push("/dashboard");
     }
   };
 
@@ -235,18 +271,18 @@ export default function ExamPage() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--surface-border)' }}>
-          <button 
-            className="btn-outline" 
-            onClick={handlePrev} 
+          <button
+            className="btn-outline"
+            onClick={handlePrev}
             disabled={currentQuestionIdx === 0}
             style={{ opacity: currentQuestionIdx === 0 ? 0.5 : 1 }}
           >
             ← Previous
           </button>
-          
+
           {currentQuestionIdx === examData.questions.length - 1 ? (
-            <button 
-              className="btn-primary" 
+            <button
+              className="btn-primary"
               onClick={() => {
                 if (window.confirm("Are you sure you want to submit your exam?")) {
                   handleSubmitExam();
