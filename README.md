@@ -80,3 +80,17 @@ Before you begin, ensure you have the following installed:
 
 5. **Open the App**:
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Docker Deployment (Production)
+
+The application is fully containerized and uses Next.js standalone builds for extreme optimization.
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+2. Ensure your `.env.local` file is created and configured.
+3. Build and run the container in detached mode:
+   ```bash
+   docker compose up -d --build
+   ```
+4. Access the application at [http://localhost:3000](http://localhost:3000).
+
+*(Note: To stop the container, run `docker compose down`)*
