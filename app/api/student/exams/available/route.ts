@@ -21,9 +21,25 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: 'Student not found' }, { status: 404 });
     }
 
-    // 1. Fetch available exams: Matches target department/batch OR has no targets
-    const availableExamsQuery = {
-      $and: [
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const type = url.searchParams.get('type') || 'practice';
+    const status = url.searchParams.get('status') || 'available';
+
+    // 1. Fetch all completed attempts for this student
+    const attempts = await ExamAttempt.find({ student: student._id }).lean();
+    const attemptedExamIds = attempts.filter(a => a.isCompleted).map(a => a.exam);
+
+    // 2. Build the database query
+    let query: any = { type };
+
+    if (status === 'given') {
+      query._id = { $in: attemptedExamIds };
+    } else {
+      // available
+      query.$and = [
+        { _id: { $nin: attemptedExamIds } },
         {
           $or: [
             { targetDepartment: student.department },
@@ -39,52 +55,42 @@ export async function GET(req: Request) {
             { targetBatch: null }
           ]
         }
-      ]
-    };
+      ];
+    }
 
-    const exams = await Exam.find(availableExamsQuery)
+    const total = await Exam.countDocuments(query);
+    const exams = await Exam.find(query)
       .populate('instructor', 'fullName')
-      .sort({ createdAt: -1 })
-      .lean(); // Lean to easily modify the result
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
 
-    // 2. Fetch all attempts by this student
-    const attempts = await ExamAttempt.find({ student: student._id }).lean();
-    const attemptedExamIds = attempts.map(a => a.exam.toString());
-
-    // 3. Filter available exams
+    // 3. Post-process the paginated results for UI flags
     const now = new Date();
-    const available = [];
-    const given = [];
+    const processedExams = exams.map(exam => {
+      let result: any = { ...exam };
 
-    for (const exam of exams) {
-      const isAttempted = attemptedExamIds.includes(exam._id.toString());
-      const attempt = attempts.find(a => a.exam.toString() === exam._id.toString());
-
-      if (isAttempted && attempt?.isCompleted) {
-        // Exam given
-        given.push({ ...exam, attempt });
+      if (status === 'given') {
+        const attempt = attempts.find(a => a.exam.toString() === exam._id.toString());
+        result.attempt = attempt;
       } else if (exam.type === 'scheduled') {
-        // Scheduled logic - STRICT RULE
         const scheduledTime = new Date(exam.scheduledFor!);
         const loginWindowEnd = new Date(scheduledTime.getTime() + 15 * 60000); // 15 mins
 
         if (now > loginWindowEnd) {
-          // Time exceeded the 15-minute window
-          available.push({ ...exam, isExpired: true });
+          result.isExpired = true;
         } else if (now < scheduledTime) {
-          // Future scheduled exams
-          available.push({ ...exam, isUpcoming: true });
-        } else {
-          // Within the active 15-minute window
-          available.push(exam);
+          result.isUpcoming = true;
         }
-      } else {
-        // Practice logic
-        available.push(exam);
       }
-    }
+      return result;
+    });
 
-    return NextResponse.json({ available, given }, { status: 200 });
+    return NextResponse.json({ 
+      exams: processedExams, 
+      hasMore: (page * limit) < total 
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error('Fetch Student Exams Error:', error);

@@ -80,8 +80,26 @@ export async function GET(req: Request) {
     // If instructor, fetch only their exams.
     // If student, this could be extended to fetch available exams (Phase 3).
     if (session.user.role === 'instructor') {
-      const exams = await Exam.find({ instructor: session.user.id }).sort({ createdAt: -1 });
-      return NextResponse.json({ exams }, { status: 200 });
+      const url = new URL(req.url);
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '10');
+      const type = url.searchParams.get('type');
+
+      const query: any = { instructor: session.user.id };
+      if (type === 'practice' || type === 'scheduled') {
+        query.type = type;
+      }
+
+      const total = await Exam.countDocuments(query);
+      const exams = await Exam.find(query)
+        .sort({ updatedAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+      return NextResponse.json({ 
+        exams, 
+        hasMore: (page * limit) < total 
+      }, { status: 200 });
     } else {
       // Logic for student fetching exams later
       return NextResponse.json({ message: 'Student exam fetching to be implemented' }, { status: 501 });
