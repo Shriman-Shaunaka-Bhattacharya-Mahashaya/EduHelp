@@ -19,74 +19,33 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
     targetBatch: "",
   });
 
-  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [parsingStatus, setParsingStatus] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-    if (file.type !== "text/plain") {
-      setError("Please upload a .txt file");
-      setFileContent(null);
+    const allowedTypes = [
+      "text/plain", 
+      "application/pdf", 
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ];
+
+    if (!allowedTypes.includes(selectedFile.type) && !selectedFile.name.endsWith('.txt') && !selectedFile.name.endsWith('.pdf') && !selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.pptx') && !selectedFile.name.endsWith('.xlsx')) {
+      setError("Please upload a .txt, .pdf, .docx, .pptx, or .xlsx file");
+      setFile(null);
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setFileContent(event.target?.result as string);
-      setError("");
-    };
-    reader.onerror = () => {
-      setError("Error reading file");
-    };
-    reader.readAsText(file);
-  };
-
-  const parseExamFile = (text: string) => {
-    const questions: any[] = [];
-    // Split by double newline or more to get blocks
-    const blocks = text.trim().split(/\n\s*\n/);
-    
-    for (const block of blocks) {
-      const lines = block.split("\n").map(l => l.trim()).filter(l => l);
-      if (lines.length < 6) {
-        throw new Error("Invalid block format. Must contain a Question, 4 options, and an Answer.");
-      }
-
-      const qLine = lines.find(l => l.startsWith("Question:"));
-      const ansLine = lines.find(l => l.startsWith("Answer:"));
-      
-      const optionsLines = lines.filter(l => /^[A-D]\)/.test(l));
-
-      if (!qLine || !ansLine || optionsLines.length < 4) {
-        throw new Error("Missing Question:, Answer: or A) B) C) D) options in a block.");
-      }
-
-      const questionText = qLine.replace("Question:", "").trim();
-      const options = optionsLines.map(o => o.replace(/^[A-D]\)/, "").trim());
-      
-      const answerLetter = ansLine.replace("Answer:", "").trim().toUpperCase();
-      const answerIndex = ["A", "B", "C", "D"].indexOf(answerLetter);
-
-      if (answerIndex === -1) {
-        throw new Error(`Invalid answer: ${answerLetter}. Must be A, B, C, or D.`);
-      }
-
-      questions.push({
-        questionText,
-        options,
-        correctOptionIndex: answerIndex
-      });
-    }
-
-    if (questions.length === 0) {
-      throw new Error("No valid questions found in the file.");
-    }
-    return questions;
+    setFile(selectedFile);
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,20 +53,35 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
     setError("");
     setSuccess("");
     
-    if (!fileContent) {
-      setError("Please upload an exam .txt file");
+    if (!file) {
+      setError("Please upload an exam file");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const parsedQuestions = parseExamFile(fileContent);
+      setParsingStatus("Extracting and parsing document with AI...");
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', file);
+
+      const parseRes = await fetch('/api/exams/parse', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const parseData = await parseRes.json();
+
+      if (!parseRes.ok) {
+        throw new Error(parseData.message || "Failed to parse document");
+      }
+
+      setParsingStatus("Saving exam to database...");
       
       const payload = {
         ...formData,
         topics: formData.topics.split(",").map(t => t.trim()).filter(t => t),
-        questions: parsedQuestions
+        questions: parseData.questions
       };
 
       const res = await fetch("/api/exams", {
@@ -131,6 +105,7 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
       setError(err.message);
     } finally {
       setIsLoading(false);
+      setParsingStatus("");
     }
   };
 
@@ -190,18 +165,34 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
       </div>
 
       <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Upload Exam Questions (.txt) *</label>
-        <div style={{ padding: '2rem', border: '2px dashed var(--surface-border)', borderRadius: '0.5rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)' }}>
-          <input type="file" accept=".txt" onChange={handleFileUpload} style={{ padding: '0.5rem', border: 'none', background: 'transparent' }} />
-          <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Ensure your file follows the strict format:<br/>
-            Question: [Text]<br/>A) [Option]<br/>B) [Option]<br/>C) [Option]<br/>D) [Option]<br/>Answer: [A/B/C/D]
-          </p>
-        </div>
+        <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Upload Exam Document (.txt, .pdf, .docx, .pptx, .xlsx)</label>
+        <input 
+          type="file" 
+          accept=".txt,.pdf,.docx,.pptx,.xlsx,application/pdf,text/plain"
+          onChange={handleFileUpload} 
+          style={{ 
+            width: '100%', 
+            padding: '0.75rem', 
+            background: 'rgba(0,0,0,0.2)', 
+            border: '1px solid var(--surface-border)', 
+            borderRadius: '0.5rem', 
+            color: '#fff' 
+          }}
+        />
       </div>
 
-      <button type="submit" className="btn-primary" disabled={isLoading} style={{ alignSelf: 'flex-start' }}>
-        {isLoading ? <div className="spinner"></div> : "Upload & Create Exam"}
+      <button 
+        type="submit" 
+        className="btn-primary" 
+        style={{ width: '100%', padding: '1rem', marginTop: '1rem' }}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+            <div className="spinner" style={{ width: '1.25rem', height: '1.25rem', borderWidth: '2px' }}></div>
+            {parsingStatus || "Processing..."}
+          </div>
+        ) : "Create Exam"}
       </button>
     </form>
   );
