@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       targetDepartment,
       targetBatch: targetBatch ? parseInt(targetBatch) : undefined,
       questions,
+      expireAt: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000), // 6 months from now
     });
 
     return NextResponse.json(
@@ -85,7 +86,10 @@ export async function GET(req: Request) {
       const limit = parseInt(url.searchParams.get('limit') || '10');
       const type = url.searchParams.get('type');
 
-      const query: any = { instructor: session.user.id };
+      const query: any = { 
+        instructor: session.user.id,
+        expireAt: { $gt: new Date() } 
+      };
       if (type === 'practice' || type === 'scheduled') {
         query.type = type;
       }

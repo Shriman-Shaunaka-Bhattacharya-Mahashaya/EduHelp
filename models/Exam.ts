@@ -16,6 +16,7 @@ export interface IExam extends Document {
   targetDepartment?: string;
   targetBatch?: number;
   questions: IQuestion[];
+  expireAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +43,7 @@ const ExamSchema = new Schema<IExam>(
     targetDepartment: { type: String },
     targetBatch: { type: Number },
     questions: { type: [QuestionSchema], required: true },
+    expireAt: { type: Date, required: true },
   },
   { timestamps: true }
 );

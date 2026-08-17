@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import connectDB from '../../../../lib/mongodb';
-import Announcement from '../../../../models/Announcement';
+import Assignment from '../../../../models/Assignment';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -16,8 +15,8 @@ const uploadToCloudinary = (buffer: Buffer, originalFilename: string): Promise<a
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       { 
-        resource_type: 'raw', // Use raw for documents (pdf, docx, etc)
-        public_id: `announcements/${Date.now()}_${originalFilename.replace(/[^a-zA-Z0-9.\-_]/g, '')}`,
+        resource_type: 'raw', 
+        public_id: `assignments/${Date.now()}_${originalFilename.replace(/[^a-zA-Z0-9.\-_]/g, '')}`,
       },
       (error, result) => {
         if (error) reject(error);
@@ -27,6 +26,26 @@ const uploadToCloudinary = (buffer: Buffer, originalFilename: string): Promise<a
   });
 };
 
+export async function GET(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'instructor') {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+    const assignments = await Assignment.find({ 
+      instructorId: session.user.id,
+      expireAt: { $gt: new Date() }
+    }).sort({ createdAt: -1 });
+
+    return NextResponse.json({ assignments }, { status: 200 });
+  } catch (error: any) {
+    console.error('Fetch Assignments Error:', error);
+    return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -35,25 +54,25 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-
+    
     const formData = await req.formData();
     const title = formData.get('title') as string;
-    const message = formData.get('message') as string;
+    const courseName = formData.get('courseName') as string;
+    const description = formData.get('description') as string;
+    
     const targetDepartment = formData.get('targetDepartment') as string;
     const targetBatchStr = formData.get('targetBatch') as string;
+    const deadlineStr = formData.get('deadline') as string;
+    const maxMarksStr = formData.get('maxMarks') as string;
     const attachmentFile = formData.get('attachment') as File | null;
 
-    if (!title || !message) {
-      return NextResponse.json({ message: 'Title and message are required' }, { status: 400 });
+    if (!title || !courseName || !description) {
+      return NextResponse.json({ message: 'Title, Course Name, and Description are required' }, { status: 400 });
     }
 
-    let attachmentData = null;
+    let attachmentData;
 
     if (attachmentFile && attachmentFile.size > 0) {
-      if (!process.env.CLOUDINARY_CLOUD_NAME) {
-         return NextResponse.json({ message: 'Cloudinary environment variables are missing. Cannot upload attachment.' }, { status: 500 });
-      }
-
       const bytes = await attachmentFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
       
@@ -70,51 +89,22 @@ export async function POST(req: Request) {
       }
     }
 
-    const targetBatch = targetBatchStr ? parseInt(targetBatchStr) : undefined;
-
-    const newAnnouncement = await Announcement.create({
+    const newAssignment = await Assignment.create({
       title,
-      message,
+      courseName,
+      description,
       instructorId: session.user.id,
       targetDepartment: targetDepartment || undefined,
-      targetBatch: targetBatch || undefined,
-      attachment: attachmentData || undefined,
+      targetBatch: targetBatchStr ? parseInt(targetBatchStr) : undefined,
+      deadline: deadlineStr ? new Date(deadlineStr) : undefined,
+      maxMarks: maxMarksStr ? parseInt(maxMarksStr) : undefined,
+      attachment: attachmentData,
       expireAt: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000), // 6 months from now
     });
 
-    return NextResponse.json(newAnnouncement, { status: 201 });
-
+    return NextResponse.json(newAssignment, { status: 201 });
   } catch (error: any) {
-    console.error('Create Announcement Error:', error);
-    return NextResponse.json(
-      { message: 'Server error', error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'instructor') {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
-    await connectDB();
-
-    const announcements = await Announcement.find({ 
-      instructorId: session.user.id,
-      expireAt: { $gt: new Date() }
-    })
-      .sort({ createdAt: -1 });
-
-    return NextResponse.json({ announcements }, { status: 200 });
-
-  } catch (error: any) {
-    console.error('Fetch Announcements Error:', error);
-    return NextResponse.json(
-      { message: 'Server error', error: error.message },
-      { status: 500 }
-    );
+    console.error('Create Assignment Error:', error);
+    return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });
   }
 }

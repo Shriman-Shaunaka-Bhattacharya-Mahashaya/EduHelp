@@ -11,11 +11,14 @@ export default function ManageAnnouncements() {
   const [message, setMessage] = useState("");
   const [targetDepartment, setTargetDepartment] = useState("");
   const [targetBatch, setTargetBatch] = useState("");
+  const [expireAt, setExpireAt] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
 
   const [parseLoading, setParseLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchAnnouncements = async () => {
     try {
@@ -79,24 +82,20 @@ export default function ManageAnnouncements() {
     formData.append("message", message);
     if (targetDepartment) formData.append("targetDepartment", targetDepartment);
     if (targetBatch) formData.append("targetBatch", targetBatch);
+    if (expireAt) formData.append("expireAt", new Date(expireAt).toISOString());
     if (attachment) formData.append("attachment", attachment);
+    if (editingId && !attachment) formData.append("removeAttachment", "true");
 
     try {
-      const res = await fetch("/api/instructor/announcements", {
-        method: "POST",
-        body: formData,
-      });
+      const url = editingId ? `/api/instructor/announcements/${editingId}` : "/api/instructor/announcements";
+      const method = editingId ? "PUT" : "POST";
+      
+      const res = await fetch(url, { method, body: formData });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to post announcement");
+      if (!res.ok) throw new Error(data.message || `Failed to ${editingId ? 'update' : 'post'} announcement`);
 
-      // Reset form
-      setTitle("");
-      setMessage("");
-      setTargetDepartment("");
-      setTargetBatch("");
-      setAttachment(null);
-      // Refresh list
+      resetForm();
       fetchAnnouncements();
     } catch (err: any) {
       setError(err.message);
@@ -105,10 +104,50 @@ export default function ManageAnnouncements() {
     }
   };
 
+  const resetForm = () => {
+    setTitle("");
+    setMessage("");
+    setTargetDepartment("");
+    setTargetBatch("");
+    setExpireAt("");
+    setAttachment(null);
+    setEditingId(null);
+    setError("");
+  };
+
+  const handleEdit = (ann: any) => {
+    setEditingId(ann._id);
+    setTitle(ann.title);
+    setMessage(ann.message);
+    setTargetDepartment(ann.targetDepartment || "");
+    setTargetBatch(ann.targetBatch || "");
+    setExpireAt(ann.expireAt ? new Date(ann.expireAt).toISOString().slice(0, 16) : "");
+    setAttachment(null); // Attachments must be re-uploaded to change, or leave null to remove
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this announcement? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/instructor/announcements/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.message || "Failed to delete");
+        return;
+      }
+      fetchAnnouncements();
+    } catch (e) {
+      console.error(e);
+      alert("Error deleting announcement.");
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Create New Announcement</h2>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+          {editingId ? "Edit Announcement" : "Create New Announcement"}
+        </h2>
         
         {error && <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '1rem' }}>{error}</div>}
 
@@ -175,6 +214,11 @@ export default function ManageAnnouncements() {
               />
             </div>
           </div>
+          
+          <div>
+            <label className="label">Auto-delete Date</label>
+            <input type="datetime-local" className="input" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+          </div>
 
           <div>
             <label className="label">Downloadable Attachment (Optional)</label>
@@ -186,9 +230,16 @@ export default function ManageAnnouncements() {
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Students will be able to download this file securely via Cloudinary.</p>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={submitLoading}>
-            {submitLoading ? <div className="spinner"></div> : "Broadcast Announcement"}
-          </button>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button type="submit" className="btn-primary" disabled={submitLoading} style={{ flex: 1 }}>
+              {submitLoading ? <div className="spinner"></div> : (editingId ? "Save Changes" : "Broadcast Announcement")}
+            </button>
+            {editingId && (
+              <button type="button" className="btn-outline" onClick={resetForm} disabled={submitLoading} style={{ flex: 1 }}>
+                Cancel Edit
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -218,15 +269,28 @@ export default function ManageAnnouncements() {
                 <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                   <ReactMarkdown>{ann.message}</ReactMarkdown>
                 </div>
+                
+                <div style={{ fontSize: '0.85rem', color: 'var(--danger)', marginBottom: '1rem' }}>
+                  <strong>⏳ Auto-deletes on:</strong> {ann.expireAt ? new Date(ann.expireAt).toLocaleString() : "Never"}
+                </div>
 
                 {ann.attachment && (
-                  <div style={{ display: 'inline-block' }}>
+                  <div style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
                     <a href={ann.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                       {ann.attachment.filename}
                     </a>
                   </div>
                 )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid var(--surface-border)', paddingTop: '1rem' }}>
+                  <button className="btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', borderColor: 'var(--danger)', color: 'var(--danger)' }} onClick={() => handleDelete(ann._id)}>
+                    Delete
+                  </button>
+                  <button className="btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }} onClick={() => handleEdit(ann)}>
+                    Edit
+                  </button>
+                </div>
               </div>
             ))}
           </div>

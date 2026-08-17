@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import UserProfile from "./UserProfile";
+import StudentAssignments from "./StudentAssignments";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "profile">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "profile">("available");
   
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
@@ -162,6 +163,9 @@ export default function StudentDashboard() {
           Type: <strong style={{ color: exam.type === 'scheduled' ? '#fbcfe8' : '#a7f3d0' }}>{exam.type.toUpperCase()}</strong>
           {exam.type === 'scheduled' && exam.scheduledFor && ` (Scheduled: ${new Date(exam.scheduledFor).toLocaleString()})`}
         </p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--danger)', marginTop: '0.25rem' }}>
+          <strong>⏳ Auto-deletes on:</strong> {exam.expireAt ? new Date(exam.expireAt).toLocaleString() : "Never"}
+        </p>
         {isGiven && exam.attempt && (
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
             Score: <strong style={{ color: '#fff' }}>{exam.attempt.score} / {exam.questions.length}</strong>
@@ -228,6 +232,18 @@ export default function StudentDashboard() {
           }}
         >
           Announcements
+        </button>
+        <button
+          onClick={() => setActiveTab("assignments")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "assignments" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "assignments" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Assignments
         </button>
         <button
           onClick={() => setActiveTab("profile")}
@@ -329,6 +345,7 @@ export default function StudentDashboard() {
                     
                     <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
                       <ReactMarkdown>{ann.message}</ReactMarkdown>
+                      <div style={{ color: 'var(--danger)', marginTop: '0.5rem' }}><strong>⏳ Auto-deletes on:</strong> {ann.expireAt ? new Date(ann.expireAt).toLocaleString() : "Never"}</div>
                     </div>
 
                     {ann.attachment && (
@@ -348,6 +365,10 @@ export default function StudentDashboard() {
 
         {activeTab === "profile" && (
           <UserProfile />
+        )}
+
+        {activeTab === "assignments" && (
+          <StudentAssignments />
         )}
       </div>
     </div>

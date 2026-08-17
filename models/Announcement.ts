@@ -11,6 +11,7 @@ export interface IAnnouncement extends Document {
     url: string;
     publicId: string;
   };
+  expireAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,9 +39,10 @@ const AnnouncementSchema: Schema = new Schema(
     },
     attachment: {
       filename: String,
-      url: String,
-      publicId: String,
+      url: { type: String },
+      publicId: { type: String },
     },
+    expireAt: { type: Date, required: true },
   },
   { timestamps: true }
 );

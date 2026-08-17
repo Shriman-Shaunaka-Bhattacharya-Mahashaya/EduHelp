@@ -5,9 +5,10 @@ import UploadExamForm from "./UploadExamForm";
 import ExamList from "./ExamList";
 import ManageAnnouncements from "./ManageAnnouncements";
 import UserProfile from "./UserProfile";
+import ManageAssignments from "./ManageAssignments";
 
 export default function InstructorDashboard() {
-  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements" | "profile">("list");
+  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements" | "assignments" | "profile">("list");
 
   return (
     <div className="glass-panel" style={{ padding: '2rem' }}>
@@ -49,6 +50,18 @@ export default function InstructorDashboard() {
           Announcements
         </button>
         <button
+          onClick={() => setActiveTab("assignments")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "assignments" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "assignments" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Assignments
+        </button>
+        <button
           onClick={() => setActiveTab("profile")}
           style={{
             background: 'transparent',
@@ -66,6 +79,7 @@ export default function InstructorDashboard() {
         {activeTab === "list" && <ExamList />}
         {activeTab === "upload" && <UploadExamForm onUploadSuccess={() => setActiveTab("list")} />}
         {activeTab === "announcements" && <ManageAnnouncements />}
+        {activeTab === "assignments" && <ManageAssignments />}
         {activeTab === "profile" && <UserProfile />}
       </div>
     </div>

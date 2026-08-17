@@ -27,7 +27,8 @@ export async function GET(req: Request) {
     // targetBatch can be null/missing (General) OR match student's batch
     const announcements = await Announcement.find({
       targetDepartment: { $in: [null, department] },
-      targetBatch: { $in: [null, graduationYear] }
+      targetBatch: { $in: [null, graduationYear] },
+      expireAt: { $gt: new Date() }
     })
     .populate('instructorId', 'fullName email')
     .sort({ createdAt: -1 });
