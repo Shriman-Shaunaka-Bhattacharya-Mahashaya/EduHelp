@@ -28,21 +28,32 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - Instructors can blast targeted announcements (with attachments) to specific cohorts of students.
 - Strict cloud management ensures that deleting an assignment or un-submitting a file permanently wipes the physical data from Cloudinary to prevent ghost-storage bloat.
 
-### 6. Automated Garbage Collection
-- Built-in data lifecycle management. Exams, Announcements, and Assignments are assigned a 6-month Time-To-Live (TTL).
+### 6. Educational Materials & Full-Text Search
+- Instructors can upload required reading materials, study guides, and syllabus documents natively to the portal.
+- Features a high-performance **Full-Text Search Engine** utilizing MongoDB's native `$text` indexing, providing ultra-fast, weighted keyword searches across document titles, courses, and tags.
+
+### 7. RAG AI Assistant (Retrieval-Augmented Generation)
+- **Local Embedded Vectors:** Uploaded materials are dynamically parsed and converted into 384-dimensional mathematical vectors natively inside the Node.js V8 engine using `@xenova/transformers` (Zero latency, zero external API costs).
+- **Atlas Vector Search:** Vectors are stored in MongoDB and searched at lightning speed utilizing Lucene-based `$vectorSearch` with strict multi-tenant metadata filtering.
+- **Groq LLM Integration:** Students can launch a dedicated AI Chatbot for any document. The system instantly queries the vector database for the most relevant context and injects it into a high-speed Llama 3/Mixtral model via the Groq API, guaranteeing hallucination-free, strictly contextual answers.
+- **Conversational Memory:** The chatbot retains a rolling window of conversational history, enabling fluid follow-up questions.
+
+### 8. Automated Garbage Collection
+- Built-in data lifecycle management. Exams, Announcements, Assignments, and Content are assigned a 6-month Time-To-Live (TTL) by default.
 - Once the expiration date passes, items instantly vanish from user interfaces (Soft Delete).
 - A secure Vercel Cron Job runs every midnight to physically delete expired documents and permanently destroy associated Cloudinary assets.
 
-### 7. Offline Resilience
+### 9. Offline Resilience
 If a student's internet drops while taking an exam, their answers and time spent are constantly cached to `localStorage`. If they submit while offline, the system safely stores the payload and uses an active **Background Ghost Sync** to automatically silently submit the exam to the server the second their internet connection is restored (`window.addEventListener('online')`).
 
 ## Role-Based Access Control
 - **Instructor Dashboard**: 
-  - Manage Practice Tests, Scheduled Tests, Announcements, and Assignments.
+  - Manage Practice Tests, Scheduled Tests, Announcements, Assignments, and Educational Materials.
   - View real-time analytics, student leaderboards, and detailed question breakdowns.
   - Full CRUD control with cloud-storage syncing.
 - **Student Dashboard**: 
-  - Segregated tabs for Available Exams, Given Exams, targeted Announcements, and Assignments.
+  - Segregated tabs for Available Exams, Given Exams, targeted Announcements, Assignments, and Materials.
+  - Interactive **AI Chatbot** available globally or linked directly to specific documents for contextual learning.
   - Detailed post-exam review, analyzing exactly which questions were right/wrong and the exact time spent per question.
   - View assignment grades and instructor feedback.
   - Profile section indicating academic details.
@@ -50,9 +61,9 @@ If a student's internet drops while taking an exam, their answers and time spent
 ## Tech Stack
 
 - **Frontend/Backend**: Next.js 15 (App Router, API Routes)
-- **Database**: MongoDB (Mongoose)
+- **Database**: MongoDB (Mongoose, `$text` index, Atlas Vector Search)
 - **Authentication**: NextAuth.js
-- **AI Processing**: Groq API + `officeparser` + `pdf-parse`
+- **AI LLM & RAG**: Groq API + `@xenova/transformers` (Local Embeddings) + `officeparser` + `pdf-parse`
 - **Cloud Storage**: Cloudinary
 - **Styling**: Vanilla CSS with modern, glassmorphic UI design
 

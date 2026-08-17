@@ -3,7 +3,10 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import connectDB from '../../../../lib/mongodb';
 import Content from '../../../../models/Content';
+import DocumentChunk from '../../../../models/DocumentChunk';
 import { v2 as cloudinary } from 'cloudinary';
+import { extractTextFromBuffer, chunkText } from '../../../../lib/documentParser';
+import { generateEmbedding } from '../../../../lib/embeddings';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -104,6 +107,29 @@ export async function POST(req: Request) {
       attachment: attachmentData,
       expireAt
     });
+
+    // Generate Embeddings synchronously before returning
+    try {
+      const rawText = await extractTextFromBuffer(buffer, attachmentFile.name);
+      const chunks = chunkText(rawText);
+      
+      const chunkDocs = [];
+      for (const chunk of chunks) {
+        const embedding = await generateEmbedding(chunk);
+        chunkDocs.push({
+          contentId: newContent._id,
+          text: chunk,
+          embedding
+        });
+      }
+      
+      if (chunkDocs.length > 0) {
+        await DocumentChunk.insertMany(chunkDocs);
+      }
+    } catch (embError) {
+      console.error("Failed to generate embeddings for new content:", embError);
+      // We don't fail the whole request, but we log the error. The content is still saved.
+    }
 
     return NextResponse.json(newContent, { status: 201 });
   } catch (error: any) {

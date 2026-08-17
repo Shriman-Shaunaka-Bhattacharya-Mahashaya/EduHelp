@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
+import StudentChatbot from './StudentChatbot';
 
 export default function StudentContent() {
   const [contents, setContents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatContentId, setChatContentId] = useState<string | undefined>(undefined);
+  const [chatContentTitle, setChatContentTitle] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -94,11 +99,25 @@ export default function StudentContent() {
                     By: {c.instructorId?.fullName || 'Instructor'} • Uploaded: {new Date(c.createdAt).toLocaleDateString()}
                   </span>
                   
-                  {c.attachment && (
-                    <a href={c.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                      📄 Download {c.attachment.filename}
-                    </a>
-                  )}
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button 
+                      onClick={() => {
+                        setChatContentId(c._id);
+                        setChatContentTitle(c.title);
+                        setChatOpen(true);
+                      }}
+                      className="btn-outline" 
+                      style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                    >
+                      🤖 Chat with Document
+                    </button>
+
+                    {c.attachment && (
+                      <a href={c.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                        📄 Download {c.attachment.filename}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -106,6 +125,12 @@ export default function StudentContent() {
         )}
       </div>
 
+      <StudentChatbot 
+        isOpen={chatOpen} 
+        onClose={() => setChatOpen(false)} 
+        contentId={chatContentId} 
+        contentTitle={chatContentTitle} 
+      />
     </div>
   );
 }

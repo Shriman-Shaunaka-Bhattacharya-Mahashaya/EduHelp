@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import UserProfile from "./UserProfile";
 import StudentAssignments from "./StudentAssignments";
 import StudentContent from "./StudentContent";
+import StudentChatbot from "./StudentChatbot";
 
 export default function StudentDashboard() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function StudentDashboard() {
   
   const [startLoading, setStartLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [globalChatOpen, setGlobalChatOpen] = useState(false);
 
   // Paginated States
   const [availPractice, setAvailPractice] = useState<any[]>([]);
@@ -388,6 +390,36 @@ export default function StudentDashboard() {
           <StudentContent />
         )}
       </div>
+
+      {/* Global Generic Chatbot */}
+      <button 
+        onClick={() => setGlobalChatOpen(!globalChatOpen)}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: 'var(--primary)',
+          color: '#fff',
+          border: 'none',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          cursor: 'pointer',
+          fontSize: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 999
+        }}
+      >
+        💬
+      </button>
+
+      <StudentChatbot 
+        isOpen={globalChatOpen}
+        onClose={() => setGlobalChatOpen(false)}
+      />
     </div>
   );
 }
