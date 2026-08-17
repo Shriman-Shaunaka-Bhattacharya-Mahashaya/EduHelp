@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import UserProfile from "./UserProfile";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "profile">("available");
   
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
@@ -228,6 +229,18 @@ export default function StudentDashboard() {
         >
           Announcements
         </button>
+        <button
+          onClick={() => setActiveTab("profile")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "profile" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "profile" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Profile
+        </button>
       </div>
 
       {error && <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '1rem' }}>{error}</div>}
@@ -331,6 +344,10 @@ export default function StudentDashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === "profile" && (
+          <UserProfile />
         )}
       </div>
     </div>
