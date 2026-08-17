@@ -1,5 +1,7 @@
 # Exam System Portal
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge)](https://edu-help-iota.vercel.app)
+
 A comprehensive, role-based exam management, proctoring, and analytics portal built with Next.js 15, React, and MongoDB.
 
 ## Advanced Features
@@ -81,8 +83,16 @@ Before you begin, ensure you have the following installed:
 5. **Open the App**:
    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Docker Deployment (Production)
+## Vercel Deployment (Recommended)
 
+This application is natively optimized for Vercel's serverless infrastructure.
+
+1. Push your code to a GitHub repository.
+2. Log into [Vercel](https://vercel.com), click **Add New Project**, and import your repository.
+3. In the Configuration tab, expand **Environment Variables** and paste your `MONGODB_URI`, `NEXTAUTH_SECRET`, and `GROQ_API_KEY`.
+4. Click **Deploy**. Vercel will automatically build the app and assign a free SSL-secured URL.
+
+## Docker Deployment
 The application is fully containerized and uses Next.js standalone builds for extreme optimization.
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
