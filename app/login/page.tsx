@@ -70,15 +70,15 @@ function LoginContent() {
         
         {error && <div className={styles.error}>{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form} autoComplete="off">
           <div className={styles.formGroup}>
             <label className={styles.label}>Email</label>
-            <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" />
+            <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="off" />
           </div>
           
           <div className={styles.formGroup}>
             <label className={styles.label}>Password</label>
-            <input type="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" />
+            <input type="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="new-password" />
           </div>
 
           <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={isLoading}>
