@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements">("available");
+  
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   
   const [startLoading, setStartLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -66,6 +70,22 @@ export default function StudentDashboard() {
     fetchChunk('available', 'scheduled', 1);
     fetchChunk('given', 'practice', 1);
     fetchChunk('given', 'scheduled', 1);
+    fetchAnnouncements();
+  };
+
+  const fetchAnnouncements = async () => {
+    setLoadingAnnouncements(true);
+    try {
+      const res = await fetch("/api/student/announcements");
+      if (res.ok) {
+        const data = await res.json();
+        setAnnouncements(data.announcements);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAnnouncements(false);
+    }
   };
 
   useEffect(() => {
@@ -196,6 +216,18 @@ export default function StudentDashboard() {
         >
           Exams Given
         </button>
+        <button
+          onClick={() => setActiveTab("announcements")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "announcements" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "announcements" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Announcements
+        </button>
       </div>
 
       {error && <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '1rem' }}>{error}</div>}
@@ -260,6 +292,44 @@ export default function StudentDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === "announcements" && (
+          <div>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Official Announcements</h2>
+            {loadingAnnouncements ? (
+              <div className="spinner"></div>
+            ) : announcements.length === 0 ? (
+              <div style={{ color: 'var(--text-secondary)' }}>No announcements available.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {announcements.map((ann: any) => (
+                  <div key={ann._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{ann.title}</h3>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(ann.createdAt).toLocaleString()}</span>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '0.25rem' }}>By {ann.instructorId?.fullName || "Instructor"}</div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
+                      <ReactMarkdown>{ann.message}</ReactMarkdown>
+                    </div>
+
+                    {ann.attachment && (
+                      <div style={{ display: 'inline-block' }}>
+                        <a href={ann.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                          Download Attachment: {ann.attachment.filename}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

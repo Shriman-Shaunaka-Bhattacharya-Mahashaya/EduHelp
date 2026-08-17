@@ -3,9 +3,10 @@
 import { useState } from "react";
 import UploadExamForm from "./UploadExamForm";
 import ExamList from "./ExamList";
+import ManageAnnouncements from "./ManageAnnouncements";
 
 export default function InstructorDashboard() {
-  const [activeTab, setActiveTab] = useState<"upload" | "list">("list");
+  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements">("list");
 
   return (
     <div className="glass-panel" style={{ padding: '2rem' }}>
@@ -34,10 +35,24 @@ export default function InstructorDashboard() {
         >
           Upload New Exam
         </button>
+        <button
+          onClick={() => setActiveTab("announcements")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "announcements" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "announcements" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Announcements
+        </button>
       </div>
 
       <div className="animate-fade-in">
-        {activeTab === "list" ? <ExamList /> : <UploadExamForm onUploadSuccess={() => setActiveTab("list")} />}
+        {activeTab === "list" && <ExamList />}
+        {activeTab === "upload" && <UploadExamForm onUploadSuccess={() => setActiveTab("list")} />}
+        {activeTab === "announcements" && <ManageAnnouncements />}
       </div>
     </div>
   );
