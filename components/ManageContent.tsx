@@ -175,12 +175,17 @@ export default function ManageContent() {
 
           <div>
             <label className="label">Educational Document Upload {!editingId && <span style={{color: 'var(--danger)'}}>*Required</span>}</label>
-            <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" onChange={e => setAttachment(e.target.files?.[0] || null)} required={!editingId} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+            <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" onChange={e => setAttachment(e.target.files?.[0] || null)} required={!editingId} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button type="submit" className="btn-primary" disabled={submitLoading} style={{ flex: 1 }}>
-              {submitLoading ? <div className="spinner"></div> : (editingId ? "Save Changes" : "Upload Content")}
+            <button type="submit" className="btn-primary" disabled={submitLoading} style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+              {submitLoading ? (
+                <>
+                  <div className="spinner" style={{width: '1.2rem', height: '1.2rem', borderWidth: '2px'}}></div> 
+                  <span>Parsing OCR & Uploading...</span>
+                </>
+              ) : (editingId ? "Save Changes" : "Upload Content")}
             </button>
             {editingId && (
               <button type="button" className="btn-outline" onClick={resetForm} disabled={submitLoading} style={{ flex: 1 }}>

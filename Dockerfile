@@ -2,7 +2,8 @@ FROM node:22-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-# Debian slim doesn't need libc6-compat (it uses glibc naturally)
+# Debian slim needs ghostscript and graphicsmagick for pdf2pic OCR conversion
+RUN apt-get update && apt-get install -y ghostscript graphicsmagick && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
