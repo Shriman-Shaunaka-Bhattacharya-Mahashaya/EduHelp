@@ -4,6 +4,7 @@ import Exam from '../../../../models/Exam';
 import Announcement from '../../../../models/Announcement';
 import Assignment from '../../../../models/Assignment';
 import AssignmentSubmission from '../../../../models/AssignmentSubmission';
+import Content from '../../../../models/Content';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -66,11 +67,22 @@ export async function GET(req: Request) {
     const assignIds = expiredAssignments.map(a => a._id);
     await Assignment.deleteMany({ _id: { $in: assignIds } });
 
+    // 4. Cleanup Content
+    const expiredContent = await Content.find({ expireAt: { $lte: now } });
+    for (const c of expiredContent) {
+      if (c.attachment?.publicId) {
+        try { await deleteFromCloudinary(c.attachment.publicId); } catch (e) { console.error("Cloudinary del error", e); }
+      }
+    }
+    const contentIds = expiredContent.map(c => c._id);
+    await Content.deleteMany({ _id: { $in: contentIds } });
+
     return NextResponse.json({
       message: 'Cleanup completed',
       deletedExams: examIds.length,
       deletedAnnouncements: annIds.length,
       deletedAssignments: assignIds.length,
+      deletedContent: contentIds.length,
     }, { status: 200 });
 
   } catch (error: any) {

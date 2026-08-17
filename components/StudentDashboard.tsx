@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import UserProfile from "./UserProfile";
 import StudentAssignments from "./StudentAssignments";
+import StudentContent from "./StudentContent";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "profile">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "content" | "profile">("available");
   
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
@@ -246,6 +247,18 @@ export default function StudentDashboard() {
           Assignments
         </button>
         <button
+          onClick={() => setActiveTab("content")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "content" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "content" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Materials
+        </button>
+        <button
           onClick={() => setActiveTab("profile")}
           style={{
             background: 'transparent',
@@ -369,6 +382,10 @@ export default function StudentDashboard() {
 
         {activeTab === "assignments" && (
           <StudentAssignments />
+        )}
+        
+        {activeTab === "content" && (
+          <StudentContent />
         )}
       </div>
     </div>
