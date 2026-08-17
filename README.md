@@ -30,6 +30,7 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 
 ### 6. Educational Materials & Full-Text Search
 - Instructors can upload required reading materials, study guides, and syllabus documents natively to the portal.
+- **Smart OCR Fallback:** Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
 - Features a high-performance **Full-Text Search Engine** utilizing MongoDB's native `$text` indexing, providing ultra-fast, weighted keyword searches across document titles, courses, and tags.
 
 ### 7. RAG AI Assistant (Retrieval-Augmented Generation)
@@ -63,7 +64,7 @@ If a student's internet drops while taking an exam, their answers and time spent
 - **Frontend/Backend**: Next.js 15 (App Router, API Routes)
 - **Database**: MongoDB (Mongoose, `$text` index, Atlas Vector Search)
 - **Authentication**: NextAuth.js
-- **AI LLM & RAG**: Groq API + `@xenova/transformers` (Local Embeddings) + `officeparser` + `pdf-parse`
+- **AI LLM & RAG**: Groq API + `@xenova/transformers` (Local Embeddings) + `tesseract.js` (OCR) + `officeparser` + `pdf-parse`
 - **Cloud Storage**: Cloudinary
 - **Styling**: Vanilla CSS with modern, glassmorphic UI design
 
