@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import InstructorDashboard from "@/components/InstructorDashboard";
 import StudentDashboard from "@/components/StudentDashboard";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -34,6 +35,7 @@ export default function Dashboard() {
           <span style={{ color: 'var(--text-secondary)' }}>
             Welcome, <strong>{session.user?.name}</strong> ({session.user?.role})
           </span>
+          <NotificationBell />
           <button className="btn-outline" onClick={() => signOut({ callbackUrl: '/login' })}>
             Sign Out
           </button>

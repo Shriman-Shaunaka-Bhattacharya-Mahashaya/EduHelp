@@ -15,6 +15,11 @@ export interface IAssignment extends Document {
     publicId: string;
   };
   expireAt: Date;
+  remindersSent: {
+    oneDay: boolean;
+    twoHours: boolean;
+    fiveMins: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +40,11 @@ const AssignmentSchema = new Schema<IAssignment>(
       publicId: { type: String },
     },
     expireAt: { type: Date, required: true },
+    remindersSent: {
+      oneDay: { type: Boolean, default: false },
+      twoHours: { type: Boolean, default: false },
+      fiveMins: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );

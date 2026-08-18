@@ -17,6 +17,11 @@ export interface IExam extends Document {
   targetBatch?: number;
   questions: IQuestion[];
   expireAt: Date;
+  remindersSent: {
+    oneDay: boolean;
+    twoHours: boolean;
+    fiveMins: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +49,11 @@ const ExamSchema = new Schema<IExam>(
     targetBatch: { type: Number },
     questions: { type: [QuestionSchema], required: true },
     expireAt: { type: Date, required: true },
+    remindersSent: {
+      oneDay: { type: Boolean, default: false },
+      twoHours: { type: Boolean, default: false },
+      fiveMins: { type: Boolean, default: false },
+    },
   },
   { timestamps: true }
 );
