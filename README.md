@@ -28,23 +28,28 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - Instructors can blast targeted announcements (with attachments) to specific cohorts of students.
 - Strict cloud management ensures that deleting an assignment or un-submitting a file permanently wipes the physical data from Cloudinary to prevent ghost-storage bloat.
 
-### 6. Educational Materials & Full-Text Search
+### 6. Direct Messaging System
+- Seamless, real-time-like communication between students and instructors.
+- Built-in notification badges and unread message tracking.
+- Automatic privacy and database optimization via **6-month TTL auto-deletion** for old messages.
+
+### 7. Educational Materials & Full-Text Search
 - Instructors can upload required reading materials, study guides, and syllabus documents natively to the portal.
 - **Smart OCR Fallback:** Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
 - Features a high-performance **Full-Text Search Engine** utilizing MongoDB's native `$text` indexing, providing ultra-fast, weighted keyword searches across document titles, courses, and tags.
 
-### 7. RAG AI Assistant (Retrieval-Augmented Generation)
+### 8. RAG AI Assistant (Retrieval-Augmented Generation)
 - **Local Embedded Vectors:** Uploaded materials are dynamically parsed and converted into 384-dimensional mathematical vectors natively inside the Node.js V8 engine using `@xenova/transformers` (Zero latency, zero external API costs).
 - **Atlas Vector Search:** Vectors are stored in MongoDB and searched at lightning speed utilizing Lucene-based `$vectorSearch` with strict multi-tenant metadata filtering.
 - **Groq LLM Integration:** Students can launch a dedicated AI Chatbot for any document. The system instantly queries the vector database for the most relevant context and injects it into a high-speed Llama 3/Mixtral model via the Groq API, guaranteeing hallucination-free, strictly contextual answers.
 - **Conversational Memory:** The chatbot retains a rolling window of conversational history, enabling fluid follow-up questions.
 
-### 8. Automated Garbage Collection
+### 9. Automated Garbage Collection
 - Built-in data lifecycle management. Exams, Announcements, Assignments, and Content are assigned a 6-month Time-To-Live (TTL) by default.
 - Once the expiration date passes, items instantly vanish from user interfaces (Soft Delete).
 - A secure Vercel Cron Job runs every midnight to physically delete expired documents and permanently destroy associated Cloudinary assets.
 
-### 9. Offline Resilience
+### 10. Offline Resilience
 If a student's internet drops while taking an exam, their answers and time spent are constantly cached to `localStorage`. If they submit while offline, the system safely stores the payload and uses an active **Background Ghost Sync** to automatically silently submit the exam to the server the second their internet connection is restored (`window.addEventListener('online')`).
 
 ## Role-Based Access Control

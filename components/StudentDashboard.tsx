@@ -7,10 +7,13 @@ import UserProfile from "./UserProfile";
 import StudentAssignments from "./StudentAssignments";
 import StudentContent from "./StudentContent";
 import StudentChatbot from "./StudentChatbot";
+import Messaging from "./Messaging";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "content" | "profile">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "content" | "messages" | "profile">("available");
+  
+  const [unreadMessages, setUnreadMessages] = useState(0);
   
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
@@ -93,9 +96,26 @@ export default function StudentDashboard() {
     }
   };
 
+  const fetchUnreadMessages = async () => {
+    try {
+      const res = await fetch("/api/messages/unread");
+      if (res.ok) {
+        const data = await res.json();
+        setUnreadMessages(data.unreadCount);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     refreshAll();
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 10000); // poll unread every 10s
+    return () => clearInterval(interval);
+  }, []);
 
+  useEffect(() => {
     // Background sync for offline exams
     const syncOfflineExams = async () => {
       let syncedAny = false;
@@ -261,6 +281,35 @@ export default function StudentDashboard() {
           Materials
         </button>
         <button
+          onClick={() => setActiveTab("messages")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "messages" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "messages" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem',
+            position: 'relative'
+          }}
+        >
+          Messages
+          {unreadMessages > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: '0',
+              right: '0',
+              background: 'var(--danger)',
+              color: 'white',
+              borderRadius: '50%',
+              padding: '0.1rem 0.4rem',
+              fontSize: '0.6rem',
+              fontWeight: 'bold',
+              transform: 'translate(25%, -25%)'
+            }}>
+              {unreadMessages}
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => setActiveTab("profile")}
           style={{
             background: 'transparent',
@@ -388,6 +437,10 @@ export default function StudentDashboard() {
         
         {activeTab === "content" && (
           <StudentContent />
+        )}
+
+        {activeTab === "messages" && (
+          <Messaging />
         )}
       </div>
 
