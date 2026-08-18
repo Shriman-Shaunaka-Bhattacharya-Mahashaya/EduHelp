@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
   experimental: {
     instrumentationHook: true,
     outputFileTracingIncludes: {
-      "/**/*": ["./node_modules/onnxruntime-node/bin/napi/v3-linux-x64/**/*.so"]
+      "app/api/**/*": ["./node_modules/**/*.so"],
+      "api/**/*": ["./node_modules/**/*.so"]
     }
   },
   typescript: {
