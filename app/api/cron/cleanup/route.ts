@@ -5,6 +5,7 @@ import Announcement from '../../../../models/Announcement';
 import Assignment from '../../../../models/Assignment';
 import AssignmentSubmission from '../../../../models/AssignmentSubmission';
 import Content from '../../../../models/Content';
+import DocumentChunk from '../../../../models/DocumentChunk';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -75,6 +76,12 @@ export async function GET(req: Request) {
       }
     }
     const contentIds = expiredContent.map(c => c._id);
+    
+    // Clean up embeddings before content deletion
+    if (contentIds.length > 0) {
+      await DocumentChunk.deleteMany({ contentId: { $in: contentIds } });
+    }
+    
     await Content.deleteMany({ _id: { $in: contentIds } });
 
     return NextResponse.json({

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 import connectDB from '../../../../../lib/mongodb';
 import Content from '../../../../../models/Content';
+import DocumentChunk from '../../../../../models/DocumentChunk';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -63,10 +64,13 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       }
     }
 
+    // Explicit controller-level teardown for embeddings
+    await DocumentChunk.deleteMany({ contentId });
     await Content.findByIdAndDelete(contentId);
 
     return NextResponse.json({ message: 'Content deleted' }, { status: 200 });
   } catch (error: any) {
+    console.error("DELETE Content Error:", error);
     return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });
   }
 }

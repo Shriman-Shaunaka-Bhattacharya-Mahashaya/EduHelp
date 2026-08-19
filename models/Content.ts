@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-
 export interface IContent extends Document {
   title: string;
   description: string;
