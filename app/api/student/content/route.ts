@@ -26,6 +26,8 @@ export async function GET(req: Request) {
     const limit = parseInt(url.searchParams.get('limit') || '5');
     const skip = (page - 1) * limit;
 
+    const course = url.searchParams.get('course');
+
     const baseQuery: any = {
       $and: [
         {
@@ -37,6 +39,10 @@ export async function GET(req: Request) {
         { expireAt: { $gt: new Date() } }
       ]
     };
+
+    if (course) {
+      baseQuery.course = course;
+    }
 
     if (searchQuery) {
       baseQuery.$text = { $search: searchQuery };

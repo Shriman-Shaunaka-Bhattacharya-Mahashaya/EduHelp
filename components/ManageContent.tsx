@@ -4,8 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ManageContent() {
+  const [courses, setCourses] = useState<string[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  
   const [contents, setContents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -24,12 +27,25 @@ export default function ManageContent() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchContents = async (pageNum = 1) => {
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch(`/api/instructor/content/courses`);
+      if (res.ok) {
+        const data = await res.json();
+        setCourses(data.courses);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchContents = async (pageNum = 1, currentCourse: string | null = selectedCourse) => {
+    if (!currentCourse) return;
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
 
     try {
-      const res = await fetch(`/api/instructor/content?page=${pageNum}&limit=5`);
+      const res = await fetch(`/api/instructor/content?page=${pageNum}&limit=5&course=${encodeURIComponent(currentCourse)}`);
       if (res.ok) {
         const data = await res.json();
         setContents(prev => pageNum === 1 ? data.content : [...prev, ...data.content]);
@@ -45,8 +61,16 @@ export default function ManageContent() {
   };
 
   useEffect(() => {
-    fetchContents();
+    fetchCourses();
   }, []);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchContents(1, selectedCourse);
+    } else {
+      setContents([]);
+    }
+  }, [selectedCourse]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +107,12 @@ export default function ManageContent() {
       if (!res.ok) throw new Error(data.message || `Failed to ${editingId ? 'update' : 'upload'} content`);
 
       resetForm();
-      fetchContents(1);
+      fetchCourses();
+      if (selectedCourse === course) {
+        fetchContents(1, selectedCourse);
+      } else {
+        setSelectedCourse(course);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -217,15 +246,57 @@ export default function ManageContent() {
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Your Uploaded Content</h2>
         
-        {loading ? (
-          <div className="spinner"></div>
-        ) : contents.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>You haven't uploaded any content yet.</p>
+        {!selectedCourse ? (
+          <>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Your Courses</h2>
+            {courses.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>You haven't uploaded any content for any courses yet.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+                {courses.map((courseName) => (
+                  <div 
+                    key={courseName}
+                    onClick={() => setSelectedCourse(courseName)}
+                    style={{ 
+                      padding: '2rem', 
+                      background: 'rgba(0,0,0,0.3)', 
+                      border: '1px solid var(--primary)', 
+                      borderRadius: '1rem', 
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      transition: 'transform 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>{courseName}</h3>
+                    <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Click to view materials</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {contents.map((c: any) => (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+              <button 
+                onClick={() => setSelectedCourse(null)}
+                className="btn-outline"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '2rem' }}
+              >
+                &larr; Back to Courses
+              </button>
+              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Materials for: <span style={{color: 'var(--primary)'}}>{selectedCourse}</span></h2>
+            </div>
+            
+            {loading ? (
+              <div className="spinner"></div>
+            ) : contents.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No materials found for this course.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {contents.map((c: any) => (
               <div key={c._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -293,6 +364,8 @@ export default function ManageContent() {
               {loadingMore ? 'Loading...' : '⬇ Load More'}
             </button>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

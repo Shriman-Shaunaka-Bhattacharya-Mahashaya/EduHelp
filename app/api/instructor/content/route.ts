@@ -42,10 +42,16 @@ export async function GET(req: Request) {
     const limit = parseInt(url.searchParams.get('limit') || '5');
     const skip = (page - 1) * limit;
 
-    const query = { 
+    const course = url.searchParams.get('course');
+
+    const query: any = { 
       instructorId: session.user.id,
       expireAt: { $gt: new Date() }
     };
+
+    if (course) {
+      query.course = course;
+    }
 
     const content = await Content.find(query)
       .sort({ createdAt: -1 })
