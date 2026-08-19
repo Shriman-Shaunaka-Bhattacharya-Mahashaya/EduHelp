@@ -6,6 +6,9 @@ import ReactMarkdown from 'react-markdown';
 export default function ManageAnnouncements() {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -20,17 +23,23 @@ export default function ManageAnnouncements() {
   
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const res = await fetch('/api/instructor/announcements');
+      const res = await fetch(`/api/instructor/announcements?page=${pageNum}&limit=5`);
       if (res.ok) {
         const data = await res.json();
-        setAnnouncements(data.announcements);
+        setAnnouncements(prev => pageNum === 1 ? data.announcements : [...prev, ...data.announcements]);
+        setHasMore(data.hasMore);
+        setPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -96,7 +105,7 @@ export default function ManageAnnouncements() {
       if (!res.ok) throw new Error(data.message || `Failed to ${editingId ? 'update' : 'post'} announcement`);
 
       resetForm();
-      fetchAnnouncements();
+      fetchAnnouncements(1);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -130,15 +139,10 @@ export default function ManageAnnouncements() {
     if (!confirm("Are you sure you want to delete this announcement? This action cannot be undone.")) return;
     try {
       const res = await fetch(`/api/instructor/announcements/${id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.message || "Failed to delete");
-        return;
-      }
-      fetchAnnouncements();
-    } catch (e) {
-      console.error(e);
-      alert("Error deleting announcement.");
+      if (!res.ok) throw new Error("Failed to delete");
+      fetchAnnouncements(1);
+    } catch (e: any) {
+      alert(e.message || "Failed to delete");
     }
   };
 
@@ -293,6 +297,19 @@ export default function ManageAnnouncements() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {hasMore && announcements.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button 
+              onClick={() => fetchAnnouncements(page + 1)} 
+              disabled={loadingMore}
+              className="btn-outline" 
+              style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+            >
+              {loadingMore ? 'Loading...' : '⬇ Load More'}
+            </button>
           </div>
         )}
       </div>

@@ -9,6 +9,10 @@ export default function StudentContent() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [chatOpen, setChatOpen] = useState(false);
   const [chatContentId, setChatContentId] = useState<string | undefined>(undefined);
@@ -21,24 +25,29 @@ export default function StudentContent() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const fetchContents = async () => {
-    setLoading(true);
+  const fetchContents = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const queryParam = debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : "";
-      const res = await fetch(`/api/student/content${queryParam}`);
+      const queryParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : "";
+      const res = await fetch(`/api/student/content?page=${pageNum}&limit=5${queryParam}`);
       if (res.ok) {
         const data = await res.json();
-        setContents(data.content);
+        setContents(prev => pageNum === 1 ? data.content : [...prev, ...data.content]);
+        setHasMore(data.hasMore);
+        setPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchContents();
+    fetchContents(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
@@ -133,6 +142,19 @@ export default function StudentContent() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {hasMore && contents.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button 
+              onClick={() => fetchContents(page + 1)} 
+              disabled={loadingMore}
+              className="btn-outline" 
+              style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+            >
+              {loadingMore ? 'Loading...' : '⬇ Load More'}
+            </button>
           </div>
         )}
       </div>

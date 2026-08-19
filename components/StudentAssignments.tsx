@@ -7,23 +7,38 @@ export default function StudentAssignments() {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // local UI state
   const [activeTab, setActiveTab] = useState<"pending" | "submitted">("pending");
   const [uploadState, setUploadState] = useState<{ [key: string]: { file: File | null, loading: boolean, error: string } }>({});
 
-  const fetchData = async () => {
+  const fetchData = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const res = await fetch('/api/student/assignments');
+      const res = await fetch(`/api/student/assignments?page=${pageNum}&limit=5`);
       if (res.ok) {
         const data = await res.json();
-        setAssignments(data.assignments);
-        setSubmissions(data.submissions);
+        setAssignments(prev => pageNum === 1 ? data.assignments : [...prev, ...data.assignments]);
+        
+        // Always refresh submissions fully since there might be new ones mapped to these assignments
+        // Alternatively, since submissions aren't paginated here (we fetch them implicitly), we should merge them cleanly.
+        // Actually, the easiest is to just append them or replace if page 1
+        setSubmissions(prev => pageNum === 1 ? data.submissions : [...prev, ...data.submissions]);
+        
+        setHasMore(data.hasMore);
+        setPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -56,7 +71,7 @@ export default function StudentAssignments() {
       if (!res.ok) throw new Error(data.message || "Upload failed");
       
       alert("Submitted successfully!");
-      fetchData(); // refresh lists
+      fetchData(1); // refresh lists
     } catch (e: any) {
       setUploadState(prev => ({ ...prev, [assignId]: { ...prev[assignId], error: e.message, loading: false } }));
     }
@@ -203,6 +218,19 @@ export default function StudentAssignments() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {hasMore && assignments.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button 
+              onClick={() => fetchData(page + 1)} 
+              disabled={loadingMore}
+              className="btn-outline" 
+              style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+            >
+              {loadingMore ? 'Loading...' : '⬇ Load More'}
+            </button>
           </div>
         )}
       </div>

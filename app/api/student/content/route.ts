@@ -22,6 +22,9 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const searchQuery = url.searchParams.get('search');
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '5');
+    const skip = (page - 1) * limit;
 
     const baseQuery: any = {
       $and: [
@@ -49,9 +52,12 @@ export async function GET(req: Request) {
       queryObj = queryObj.sort({ createdAt: -1 });
     }
 
-    const content = await queryObj;
+    const content = await queryObj.skip(skip).limit(limit);
 
-    return NextResponse.json({ content }, { status: 200 });
+    const totalDocs = await Content.countDocuments(baseQuery);
+    const hasMore = totalDocs > skip + limit;
+
+    return NextResponse.json({ content, hasMore }, { status: 200 });
 
   } catch (error: any) {
     console.error('Fetch Student Content Error:', error);

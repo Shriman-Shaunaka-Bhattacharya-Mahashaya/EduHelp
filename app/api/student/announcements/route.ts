@@ -25,15 +25,27 @@ export async function GET(req: Request) {
     // Filter announcements:
     // targetDepartment can be null/missing (General) OR match student's department
     // targetBatch can be null/missing (General) OR match student's batch
-    const announcements = await Announcement.find({
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '5');
+    const skip = (page - 1) * limit;
+
+    const query = {
       targetDepartment: { $in: [null, department] },
       targetBatch: { $in: [null, graduationYear] },
       expireAt: { $gt: new Date() }
-    })
-    .populate('instructorId', 'fullName email')
-    .sort({ createdAt: -1 });
+    };
 
-    return NextResponse.json({ announcements }, { status: 200 });
+    const announcements = await Announcement.find(query)
+      .populate('instructorId', 'fullName email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalDocs = await Announcement.countDocuments(query);
+    const hasMore = totalDocs > skip + limit;
+
+    return NextResponse.json({ announcements, hasMore }, { status: 200 });
 
   } catch (error: any) {
     console.error('Fetch Student Announcements Error:', error);

@@ -6,6 +6,9 @@ import ReactMarkdown from 'react-markdown';
 export default function ManageAssignments() {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -29,17 +32,23 @@ export default function ManageAssignments() {
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [gradingState, setGradingState] = useState<{ [key: string]: { marks: string, feedback: string } }>({});
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const res = await fetch('/api/instructor/assignments');
+      const res = await fetch(`/api/instructor/assignments?page=${pageNum}&limit=5`);
       if (res.ok) {
         const data = await res.json();
-        setAssignments(data.assignments);
+        setAssignments(prev => pageNum === 1 ? data.assignments : [...prev, ...data.assignments]);
+        setHasMore(data.hasMore);
+        setPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -105,7 +114,7 @@ export default function ManageAssignments() {
       if (!res.ok) throw new Error(data.message || `Failed to ${editingId ? 'update' : 'create'} assignment`);
 
       resetForm();
-      fetchAssignments();
+      fetchAssignments(1);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -146,7 +155,7 @@ export default function ManageAssignments() {
     try {
       const res = await fetch(`/api/instructor/assignments/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete");
-      fetchAssignments();
+      fetchAssignments(1);
     } catch (e) {
       alert("Error deleting assignment.");
     }
@@ -330,6 +339,19 @@ export default function ManageAssignments() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {hasMore && assignments.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button 
+              onClick={() => fetchAssignments(page + 1)} 
+              disabled={loadingMore}
+              className="btn-outline" 
+              style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+            >
+              {loadingMore ? 'Loading...' : '⬇ Load More'}
+            </button>
           </div>
         )}
       </div>

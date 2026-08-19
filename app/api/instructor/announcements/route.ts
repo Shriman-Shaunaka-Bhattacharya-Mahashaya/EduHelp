@@ -101,14 +101,25 @@ export async function GET(req: Request) {
     }
 
     await connectDB();
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '5');
+    const skip = (page - 1) * limit;
 
-    const announcements = await Announcement.find({ 
+    const query = { 
       instructorId: session.user.id,
       expireAt: { $gt: new Date() }
-    })
-      .sort({ createdAt: -1 });
+    };
 
-    return NextResponse.json({ announcements }, { status: 200 });
+    const announcements = await Announcement.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalDocs = await Announcement.countDocuments(query);
+    const hasMore = totalDocs > skip + limit;
+
+    return NextResponse.json({ announcements, hasMore }, { status: 200 });
 
   } catch (error: any) {
     console.error('Fetch Announcements Error:', error);

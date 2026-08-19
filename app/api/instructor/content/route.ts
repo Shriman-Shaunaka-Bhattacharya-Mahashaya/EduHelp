@@ -37,12 +37,25 @@ export async function GET(req: Request) {
     }
 
     await connectDB();
-    const content = await Content.find({ 
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '5');
+    const skip = (page - 1) * limit;
+
+    const query = { 
       instructorId: session.user.id,
       expireAt: { $gt: new Date() }
-    }).sort({ createdAt: -1 });
+    };
 
-    return NextResponse.json({ content }, { status: 200 });
+    const content = await Content.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalDocs = await Content.countDocuments(query);
+    const hasMore = totalDocs > skip + limit;
+
+    return NextResponse.json({ content, hasMore }, { status: 200 });
   } catch (error: any) {
     console.error('Fetch Content Error:', error);
     return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });

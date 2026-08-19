@@ -22,19 +22,31 @@ export async function GET(req: Request) {
     const department = user.department;
     const batch = user.graduationYear;
 
-    // Find assignments where target matches student or is null (general)
-    const assignments = await Assignment.find({
+    const url = new URL(req.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '5');
+    const skip = (page - 1) * limit;
+
+    const query = {
       $and: [
         { targetDepartment: { $in: [null, department, ""] } },
         { targetBatch: { $in: [null, batch] } },
         { expireAt: { $gt: new Date() } }
       ]
-    }).sort({ createdAt: -1 });
+    };
+
+    const assignments = await Assignment.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalDocs = await Assignment.countDocuments(query);
+    const hasMore = totalDocs > skip + limit;
 
     // Also fetch their submissions to determine status
     const submissions = await AssignmentSubmission.find({ studentId: session.user.id });
 
-    return NextResponse.json({ assignments, submissions }, { status: 200 });
+    return NextResponse.json({ assignments, submissions, hasMore }, { status: 200 });
 
   } catch (error: any) {
     console.error('Fetch Student Assignments Error:', error);

@@ -6,6 +6,9 @@ import ReactMarkdown from 'react-markdown';
 export default function ManageContent() {
   const [contents, setContents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -21,17 +24,23 @@ export default function ManageContent() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchContents = async () => {
+  const fetchContents = async (pageNum = 1) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const res = await fetch('/api/instructor/content');
+      const res = await fetch(`/api/instructor/content?page=${pageNum}&limit=5`);
       if (res.ok) {
         const data = await res.json();
-        setContents(data.content);
+        setContents(prev => pageNum === 1 ? data.content : [...prev, ...data.content]);
+        setHasMore(data.hasMore);
+        setPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -74,7 +83,7 @@ export default function ManageContent() {
       if (!res.ok) throw new Error(data.message || `Failed to ${editingId ? 'update' : 'upload'} content`);
 
       resetForm();
-      fetchContents();
+      fetchContents(1);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -116,7 +125,7 @@ export default function ManageContent() {
     try {
       const res = await fetch(`/api/instructor/content/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error("Failed to delete");
-      fetchContents();
+      fetchContents(1);
     } catch (e) {
       alert("Error deleting content.");
     }
@@ -270,6 +279,19 @@ export default function ManageContent() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {hasMore && contents.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button 
+              onClick={() => fetchContents(page + 1)} 
+              disabled={loadingMore}
+              className="btn-outline" 
+              style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+            >
+              {loadingMore ? 'Loading...' : '⬇ Load More'}
+            </button>
           </div>
         )}
       </div>

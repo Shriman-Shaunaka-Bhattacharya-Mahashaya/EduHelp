@@ -17,6 +17,9 @@ export default function StudentDashboard() {
   
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+  const [announcementsPage, setAnnouncementsPage] = useState(1);
+  const [hasMoreAnnouncements, setHasMoreAnnouncements] = useState(false);
+  const [loadingMoreAnnouncements, setLoadingMoreAnnouncements] = useState(false);
   
   const [startLoading, setStartLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -81,18 +84,23 @@ export default function StudentDashboard() {
     fetchAnnouncements();
   };
 
-  const fetchAnnouncements = async () => {
-    setLoadingAnnouncements(true);
+  const fetchAnnouncements = async (pageNum = 1) => {
+    if (pageNum === 1) setLoadingAnnouncements(true);
+    else setLoadingMoreAnnouncements(true);
+    
     try {
-      const res = await fetch("/api/student/announcements");
+      const res = await fetch(`/api/student/announcements?page=${pageNum}&limit=5`);
       if (res.ok) {
         const data = await res.json();
-        setAnnouncements(data.announcements);
+        setAnnouncements(prev => pageNum === 1 ? data.announcements : [...prev, ...data.announcements]);
+        setHasMoreAnnouncements(data.hasMore);
+        setAnnouncementsPage(pageNum);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoadingAnnouncements(false);
+      setLoadingMoreAnnouncements(false);
     }
   };
 
@@ -422,6 +430,19 @@ export default function StudentDashboard() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+            
+            {hasMoreAnnouncements && announcements.length > 0 && (
+              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                <button 
+                  onClick={() => fetchAnnouncements(announcementsPage + 1)} 
+                  disabled={loadingMoreAnnouncements}
+                  className="btn-outline" 
+                  style={{ padding: '0.75rem 2rem', borderRadius: '2rem' }}
+                >
+                  {loadingMoreAnnouncements ? 'Loading...' : '⬇ Load More'}
+                </button>
               </div>
             )}
           </div>
