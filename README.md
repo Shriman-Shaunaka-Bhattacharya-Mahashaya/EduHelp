@@ -10,7 +10,7 @@ A comprehensive, role-based exam management, proctoring, and academic portal bui
 Instructors no longer need to worry about formatting. You can upload raw, messy `.txt`, `.pdf`, `.docx`, `.pptx`, or `.xlsx` files, and our secure backend leverages the **Groq AI API (llama-3.1-8b-instant)** to instantly read, understand, and extract questions, options, and correct answers into structured database records perfectly.
 
 ### 2. High-Performance Scalability
-The system is built to handle thousands of exams and attempts simultaneously. Dashboards utilize strict **Database-Level Pagination** (MongoDB `.skip()` and `.limit()`) and segregated lazy-loading to ensure the server never hits memory payload limits, regardless of scale.
+The system is built to handle thousands of exams and attempts simultaneously. Dashboards utilize strict **Database-Level Pagination** (MongoDB `.skip()` and `.limit()`) and infinite-scroll "Load More" mechanics across all core content streams (Materials, Announcements, Assignments) to ensure the server never hits memory payload limits, regardless of scale.
 
 ### 3. Strict Proctoring & Anti-Cheating
 The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
@@ -41,9 +41,10 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - Automatic privacy and database optimization via **6-month TTL auto-deletion** for old messages.
 
 ### 8. Educational Materials & Full-Text Search
+- **Course-Based Organization**: Materials are structurally grouped into dynamic Course Folders. The system auto-aggregates a distinct list of subjects for students and instructors, keeping the workspace completely clutter-free.
 - Instructors can upload required reading materials, study guides, syllabus documents, and **Video Lectures** (MP4, WebM, OGG) natively to the portal.
 - Video materials are securely hosted, optimized for rapid streaming, and rendered in sleek native HTML5 embedded players directly inside the dashboard.
-- **Smart OCR Fallback:** Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
+- **Smart OCR Fallback**: Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
 - Features a high-performance **Full-Text Search Engine** utilizing MongoDB's native `$text` indexing, providing ultra-fast, weighted keyword searches across document titles, courses, and tags.
 
 ### 9. RAG AI Assistant (Retrieval-Augmented Generation)
