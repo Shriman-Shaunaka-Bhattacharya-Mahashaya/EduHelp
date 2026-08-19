@@ -100,25 +100,37 @@ export default function StudentContent() {
                   </span>
                   
                   <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button 
-                      onClick={() => {
-                        setChatContentId(c._id);
-                        setChatContentTitle(c.title);
-                        setChatOpen(true);
-                      }}
-                      className="btn-outline" 
-                      style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                    >
-                      🤖 Chat with Document
-                    </button>
+                    {c.attachment?.resourceType !== 'video' && (
+                      <button 
+                        onClick={() => {
+                          setChatContentId(c._id);
+                          setChatContentTitle(c.title);
+                          setChatOpen(true);
+                        }}
+                        className="btn-outline" 
+                        style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                      >
+                        🤖 Chat with Document
+                      </button>
+                    )}
 
-                    {c.attachment && (
+                    {c.attachment && c.attachment.resourceType !== 'video' && (
                       <a href={c.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem', borderRadius: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                         📄 Download {c.attachment.filename}
                       </a>
                     )}
                   </div>
                 </div>
+
+                {c.attachment && c.attachment.resourceType === 'video' && (
+                  <div style={{ marginTop: '1rem', width: '100%' }}>
+                    <video 
+                      controls 
+                      src={c.attachment.url} 
+                      style={{ width: '100%', maxHeight: '500px', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: '#000' }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

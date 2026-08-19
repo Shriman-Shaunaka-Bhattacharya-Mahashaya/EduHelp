@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ManageContent() {
@@ -19,6 +19,7 @@ export default function ManageContent() {
 
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchContents = async () => {
     try {
@@ -92,6 +93,9 @@ export default function ManageContent() {
     setAttachment(null);
     setEditingId(null);
     setError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleEdit = (c: any) => {
@@ -174,8 +178,15 @@ export default function ManageContent() {
           </div>
 
           <div>
-            <label className="label">Educational Document Upload {!editingId && <span style={{color: 'var(--danger)'}}>*Required</span>}</label>
-            <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" onChange={e => setAttachment(e.target.files?.[0] || null)} required={!editingId} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Upload File (PDF, DOCX, PPTX, MP4, etc) *</label>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,video/mp4,video/webm,video/ogg"
+              onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+              style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'white' }}
+              required={!editingId}
+            />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>
@@ -238,10 +249,18 @@ export default function ManageContent() {
                 </div>
 
                 {c.attachment && (
-                  <div style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
-                    <a href={c.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
-                      📄 View/Download: {c.attachment.filename}
-                    </a>
+                  <div style={{ display: 'inline-block', marginBottom: '1.5rem', width: '100%' }}>
+                    {c.attachment.resourceType === 'video' ? (
+                      <video 
+                        controls 
+                        src={c.attachment.url} 
+                        style={{ width: '100%', maxHeight: '400px', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: '#000' }}
+                      />
+                    ) : (
+                      <a href={c.attachment.url} target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: '0.5rem 1rem', width: 'fit-content' }}>
+                        📄 View/Download: {c.attachment.filename}
+                      </a>
+                    )}
                   </div>
                 )}
 

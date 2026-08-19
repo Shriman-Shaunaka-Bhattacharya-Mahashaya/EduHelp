@@ -12,6 +12,7 @@ export interface IContent extends Document {
     filename: string;
     url: string;
     publicId: string;
+    resourceType: string;
   };
   expireAt: Date;
   createdAt: Date;
@@ -31,6 +32,7 @@ const ContentSchema = new Schema<IContent>(
       filename: { type: String, required: true },
       url: { type: String, required: true },
       publicId: { type: String, required: true },
+      resourceType: { type: String, default: 'document' },
     },
     expireAt: { type: Date, required: true },
   },

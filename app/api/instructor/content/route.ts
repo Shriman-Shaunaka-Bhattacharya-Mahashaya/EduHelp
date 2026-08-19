@@ -14,11 +14,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadToCloudinary = (buffer: Buffer, originalFilename: string): Promise<any> => {
+const uploadToCloudinary = (buffer: Buffer, originalFilename: string, resourceType: 'auto' | 'raw' | 'video' = 'raw'): Promise<any> => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       { 
-        resource_type: 'raw', 
+        resource_type: resourceType, 
         public_id: `content/${Date.now()}_${originalFilename.replace(/[^a-zA-Z0-9.\-_]/g, '')}`,
       },
       (error, result) => {
@@ -78,13 +78,20 @@ export async function POST(req: Request) {
     const bytes = await attachmentFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
+    // Determine if it's a video
+    const isVideo = attachmentFile.type.startsWith('video/') || 
+                    attachmentFile.name.toLowerCase().match(/\.(mp4|webm|ogg|mkv|mov)$/);
+    
+    const resourceType = isVideo ? 'video' : 'raw';
+    
     let attachmentData;
     try {
-      const result = await uploadToCloudinary(buffer, attachmentFile.name);
+      const result = await uploadToCloudinary(buffer, attachmentFile.name, resourceType);
       attachmentData = {
         filename: attachmentFile.name,
         url: result.secure_url,
-        publicId: result.public_id
+        publicId: result.public_id,
+        resourceType: isVideo ? 'video' : 'document'
       };
     } catch (uploadErr) {
       console.error("Cloudinary upload error:", uploadErr);
@@ -108,27 +115,29 @@ export async function POST(req: Request) {
       expireAt
     });
 
-    // Generate Embeddings synchronously before returning
-    try {
-      const rawText = await extractTextFromBuffer(buffer, attachmentFile.name);
-      const chunks = chunkText(rawText);
-      
-      const chunkDocs = [];
-      for (const chunk of chunks) {
-        const embedding = await generateEmbedding(chunk);
-        chunkDocs.push({
-          contentId: newContent._id,
-          text: chunk,
-          embedding
-        });
+    // Generate Embeddings synchronously before returning (Skip for videos)
+    if (!isVideo) {
+      try {
+        const rawText = await extractTextFromBuffer(buffer, attachmentFile.name);
+        const chunks = chunkText(rawText);
+        
+        const chunkDocs = [];
+        for (const chunk of chunks) {
+          const embedding = await generateEmbedding(chunk);
+          chunkDocs.push({
+            contentId: newContent._id,
+            text: chunk,
+            embedding
+          });
+        }
+        
+        if (chunkDocs.length > 0) {
+          await DocumentChunk.insertMany(chunkDocs);
+        }
+      } catch (parseErr) {
+        console.error("Warning: Failed to parse document text or generate embeddings", parseErr);
+        // We don't fail the upload, just don't create embeddings
       }
-      
-      if (chunkDocs.length > 0) {
-        await DocumentChunk.insertMany(chunkDocs);
-      }
-    } catch (embError) {
-      console.error("Failed to generate embeddings for new content:", embError);
-      // We don't fail the whole request, but we log the error. The content is still saved.
     }
 
     return NextResponse.json(newContent, { status: 201 });
