@@ -55,7 +55,7 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 ### 10. Automated Garbage Collection
 - Built-in data lifecycle management. Exams, Announcements, Assignments, and Content are assigned a 6-month Time-To-Live (TTL) by default.
 - Once the expiration date passes, items instantly vanish from user interfaces (Soft Delete).
-- A secure Vercel Cron Job runs every midnight to physically delete expired documents and permanently destroy associated Cloudinary assets.
+- A secure Vercel Cron Job runs every midnight to physically delete expired documents, permanently destroy associated Cloudinary assets, and explicitly wipe orphaned Vector Embeddings from the `$vectorSearch` index to prevent data bloat.
 
 ### 11. Offline Resilience
 If a student's internet drops while taking an exam, their answers and time spent are constantly cached to `localStorage`. If they submit while offline, the system safely stores the payload and uses an active **Background Ghost Sync** to automatically silently submit the exam to the server the second their internet connection is restored (`window.addEventListener('online')`).
@@ -119,6 +119,31 @@ Before you begin, ensure you have the following installed:
    # Cron Job Security (For Vercel)
    CRON_SECRET=your_secure_cron_password
    ```
+
+3. **Configure Atlas Vector Search**:
+   For the AI Chatbot to work, you must create a Vector Search Index in your MongoDB Atlas dashboard.
+   - Go to MongoDB Atlas -> **Atlas Search**.
+   - Click **Create Search Index** and choose **Atlas Vector Search** (JSON Editor).
+   - Select your database and the `documentchunks` collection (Note: you must upload at least one educational material via the dashboard first so Mongoose creates the collection).
+   - Name the index exactly: **`VectorSearchIndex`**
+   - Paste the following configuration:
+   ```json
+   {
+     "fields": [
+       {
+         "type": "vector",
+         "path": "embedding",
+         "numDimensions": 384,
+         "similarity": "cosine"
+       },
+       {
+         "type": "filter",
+         "path": "contentId"
+       }
+     ]
+   }
+   ```
+   - Click Create. Wait until the index is `Active`.
 
 ## Docker Deployment (Local)
 The application is fully containerized and uses Next.js standalone builds for extreme optimization.
