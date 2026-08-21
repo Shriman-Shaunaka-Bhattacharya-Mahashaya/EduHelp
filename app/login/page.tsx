@@ -59,7 +59,7 @@ function LoginContent() {
       <div className={`glass-panel animate-fade-in ${styles.authCard}`}>
         <div className={styles.header}>
           <h1 className={styles.title}>Welcome Back</h1>
-          <p className={styles.subtitle}>Sign in to your ExamPortal account</p>
+          <p className={styles.subtitle}>Sign in to your EduHelp account</p>
         </div>
 
         {successMsg && (

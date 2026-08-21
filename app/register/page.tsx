@@ -57,7 +57,7 @@ export default function Register() {
     <div className={styles.container}>
       <div className={`glass-panel animate-fade-in ${styles.authCard}`}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Join ExamPortal</h1>
+          <h1 className={styles.title}>Join EduHelp</h1>
           <p className={styles.subtitle}>Create your account to get started</p>
         </div>
 

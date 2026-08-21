@@ -1,4 +1,4 @@
-# Exam System Portal
+# EduHelp LMS
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge)](https://edu-help-iota.vercel.app)
 
