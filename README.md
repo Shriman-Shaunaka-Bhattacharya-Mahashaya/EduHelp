@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge)](https://edu-help-iota.vercel.app)
 
-A comprehensive, role-based exam management, proctoring, and academic portal built with Next.js 15, React, and MongoDB. 
+A comprehensive, role-based Learning Management System (LMS) built with Next.js 15, React, and MongoDB. EduHelp goes far beyond standard exam portals by integrating an intelligent AI-driven RAG chatbot, global semantic vector search for educational materials, rich-text assignment grading, direct real-time messaging, and a strictly proctored anti-cheat examination environment into a single, cohesive academic workspace.
 
 ## Advanced Features
 
