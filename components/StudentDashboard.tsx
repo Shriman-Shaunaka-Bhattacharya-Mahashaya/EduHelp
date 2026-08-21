@@ -8,10 +8,11 @@ import StudentAssignments from "./StudentAssignments";
 import StudentContent from "./StudentContent";
 import StudentChatbot from "./StudentChatbot";
 import Messaging from "./Messaging";
+import StudentClasses from "./StudentClasses";
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "content" | "messages" | "profile">("available");
+  const [activeTab, setActiveTab] = useState<"available" | "given" | "announcements" | "assignments" | "content" | "classes" | "messages" | "profile">("available");
   
   const [unreadMessages, setUnreadMessages] = useState(0);
   
@@ -289,6 +290,18 @@ export default function StudentDashboard() {
           Materials
         </button>
         <button
+          onClick={() => setActiveTab("classes")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "classes" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "classes" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Classes
+        </button>
+        <button
           onClick={() => setActiveTab("messages")}
           style={{
             background: 'transparent',
@@ -458,6 +471,10 @@ export default function StudentDashboard() {
         
         {activeTab === "content" && (
           <StudentContent />
+        )}
+
+        {activeTab === "classes" && (
+          <StudentClasses />
         )}
 
         {activeTab === "messages" && (

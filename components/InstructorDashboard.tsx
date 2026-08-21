@@ -8,9 +8,10 @@ import UserProfile from "./UserProfile";
 import ManageAssignments from "./ManageAssignments";
 import ManageContent from "./ManageContent";
 import Messaging from "./Messaging";
+import ManageClasses from "./ManageClasses";
 
 export default function InstructorDashboard() {
-  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements" | "assignments" | "content" | "messages" | "profile">("list");
+  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements" | "assignments" | "content" | "classes" | "messages" | "profile">("list");
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   const fetchUnreadMessages = async () => {
@@ -95,6 +96,18 @@ export default function InstructorDashboard() {
           Materials
         </button>
         <button
+          onClick={() => setActiveTab("classes")}
+          style={{
+            background: 'transparent',
+            color: activeTab === "classes" ? 'var(--primary)' : 'var(--text-secondary)',
+            borderBottom: activeTab === "classes" ? '2px solid var(--primary)' : 'none',
+            borderRadius: 0,
+            padding: '0.5rem 1rem'
+          }}
+        >
+          Classes
+        </button>
+        <button
           onClick={() => setActiveTab("messages")}
           style={{
             background: 'transparent',
@@ -143,6 +156,7 @@ export default function InstructorDashboard() {
         {activeTab === "announcements" && <ManageAnnouncements />}
         {activeTab === "assignments" && <ManageAssignments />}
         {activeTab === "content" && <ManageContent />}
+        {activeTab === "classes" && <ManageClasses />}
         {activeTab === "messages" && <Messaging />}
         {activeTab === "profile" && <UserProfile />}
       </div>

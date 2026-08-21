@@ -54,7 +54,7 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - **Conversational Memory:** The chatbot retains a rolling window of conversational history, enabling fluid follow-up questions.
 
 ### 10. Automated Garbage Collection
-- Built-in data lifecycle management. Exams, Announcements, Assignments, and Content are assigned a 6-month Time-To-Live (TTL) by default.
+- Built-in data lifecycle management. Exams, Announcements, Assignments, Content, and **Online Classes** are assigned a 6-month Time-To-Live (TTL) by default.
 - Once the expiration date passes, items instantly vanish from user interfaces (Soft Delete).
 - A secure Vercel Cron Job runs every midnight to physically delete expired documents, permanently destroy associated Cloudinary assets, and explicitly wipe orphaned Vector Embeddings from the `$vectorSearch` index to prevent data bloat.
 
@@ -116,6 +116,11 @@ Before you begin, ensure you have the following installed:
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
+
+   # ZegoCloud Keys for Video Classes
+   # IMPORTANT: Do NOT prefix these with NEXT_PUBLIC_. They must remain secret on the server!
+   ZEGO_APP_ID=your_zego_app_id
+   ZEGO_SERVER_SECRET=your_zego_server_secret
 
    # Cron Job Security (For Vercel)
    CRON_SECRET=your_secure_cron_password
