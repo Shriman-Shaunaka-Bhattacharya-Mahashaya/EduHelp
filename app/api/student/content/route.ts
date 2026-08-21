@@ -4,6 +4,7 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 import connectDB from '../../../../lib/mongodb';
 import Content from '../../../../models/Content';
 import User from '../../../../models/User';
+import { generateEmbedding } from '../../../../lib/embeddings';
 
 export async function GET(req: Request) {
   try {
@@ -44,24 +45,93 @@ export async function GET(req: Request) {
       baseQuery.course = course;
     }
 
-    if (searchQuery) {
-      baseQuery.$text = { $search: searchQuery };
-    }
+    let content = [];
+    let hasMore = false;
 
-    let queryObj = Content.find(baseQuery)
-      .populate('instructorId', 'fullName email');
-
-    // If text searching, we can sort by text score relevance, else sort by date
     if (searchQuery) {
-      queryObj = queryObj.select({ score: { $meta: "textScore" } }).sort({ score: { $meta: "textScore" } });
+      // Vector Search
+      let queryEmbedding: number[] = [];
+      try {
+        queryEmbedding = await generateEmbedding(searchQuery);
+      } catch (e) {
+        console.error("Failed to embed search query:", e);
+      }
+
+      if (queryEmbedding.length > 0) {
+        const deptFilter = department ? [department, ""] : [""];
+        const batchFilter = graduationYear ? [graduationYear] : [];
+
+        // Prepare the filter for $vectorSearch
+        const vectorFilter: any = {
+          $and: [
+            {
+              $or: [
+                { targetDepartment: { $exists: false } },
+                { targetDepartment: { $in: deptFilter } },
+                { targetBatch: { $exists: false } }
+              ]
+            },
+            { expireAt: { $gt: new Date() } }
+          ]
+        };
+        
+        if (batchFilter.length > 0) {
+          vectorFilter.$and[0].$or.push({ targetBatch: { $in: batchFilter } });
+        }
+
+        if (course) {
+          vectorFilter.course = course;
+        }
+
+        const pipeline = [
+          {
+            $vectorSearch: {
+              index: "ContentVectorIndex",
+              path: "embedding",
+              queryVector: queryEmbedding,
+              numCandidates: 100,
+              limit: skip + limit,
+              filter: vectorFilter
+            }
+          },
+          { $skip: skip },
+          { $limit: limit }
+        ];
+
+        content = await Content.aggregate(pipeline);
+        await Content.populate(content, { path: 'instructorId', select: 'fullName email' });
+        
+        // Count for hasMore (since we don't have totalDocs from aggregate easily without $facet)
+        // We can just check if we got `limit` number of results
+        hasMore = content.length === limit;
+      }
     } else {
-      queryObj = queryObj.sort({ createdAt: -1 });
+      // Normal find
+      const normalBaseQuery: any = {
+        $and: [
+          {
+            $or: [
+              { targetDepartment: { $in: [null, department, ""] } },
+              { targetBatch: { $in: [null, graduationYear] } },
+              { targetDepartment: { $exists: false } },
+              { targetBatch: { $exists: false } }
+            ]
+          },
+          { expireAt: { $gt: new Date() } }
+        ]
+      };
+      if (course) normalBaseQuery.course = course;
+
+      const queryObj = Content.find(normalBaseQuery)
+        .populate('instructorId', 'fullName email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      content = await queryObj;
+      const totalDocs = await Content.countDocuments(normalBaseQuery);
+      hasMore = totalDocs > skip + limit;
     }
-
-    const content = await queryObj.skip(skip).limit(limit);
-
-    const totalDocs = await Content.countDocuments(baseQuery);
-    const hasMore = totalDocs > skip + limit;
 
     return NextResponse.json({ content, hasMore }, { status: 200 });
 

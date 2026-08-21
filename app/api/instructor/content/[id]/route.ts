@@ -5,6 +5,7 @@ import connectDB from '../../../../../lib/mongodb';
 import Content from '../../../../../models/Content';
 import DocumentChunk from '../../../../../models/DocumentChunk';
 import { v2 as cloudinary } from 'cloudinary';
+import { generateEmbedding } from '../../../../../lib/embeddings';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -144,6 +145,17 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     
     if (attachmentData) {
       content.attachment = attachmentData;
+    }
+    
+    // Generate new metadata embedding
+    try {
+      const metaString = `Course: ${content.course}. Title: ${content.title}. Tags: ${content.tags.join(', ')}. Description: ${content.description}`;
+      const embedding = await generateEmbedding(metaString);
+      if (embedding && embedding.length > 0) {
+        content.embedding = embedding;
+      }
+    } catch (e) {
+      console.error("Failed to generate metadata embedding on update:", e);
     }
 
     await content.save();

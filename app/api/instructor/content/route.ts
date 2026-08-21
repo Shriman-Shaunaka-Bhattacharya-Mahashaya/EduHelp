@@ -122,6 +122,16 @@ export async function POST(req: Request) {
       expireAt = new Date(expireAtStr);
     }
 
+    // Generate metadata embedding
+    let embedding: number[] = [];
+    try {
+      const metaString = `Course: ${course}. Title: ${title}. Tags: ${tags.join(', ')}. Description: ${description}`;
+      embedding = await generateEmbedding(metaString);
+    } catch (e) {
+      console.error("Failed to generate metadata embedding:", e);
+      // We don't fail the upload if embedding fails, but search won't work well
+    }
+
     const newContent = await Content.create({
       title,
       course,
@@ -131,7 +141,8 @@ export async function POST(req: Request) {
       targetDepartment: targetDepartment || undefined,
       targetBatch: targetBatchStr ? parseInt(targetBatchStr) : undefined,
       attachment: attachmentData,
-      expireAt
+      expireAt,
+      embedding: embedding.length > 0 ? embedding : undefined,
     });
 
     // Generate Embeddings synchronously before returning (Skip for videos)

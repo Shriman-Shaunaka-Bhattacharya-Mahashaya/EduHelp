@@ -44,14 +44,16 @@ export default function StudentContent() {
     fetchCourses();
   }, []);
 
-  const fetchContents = async (pageNum = 1, currentCourse: string | null = selectedCourse) => {
-    if (!currentCourse) return;
+  const fetchContents = async (pageNum = 1, currentCourse: string | null = selectedCourse, search: string = debouncedSearch) => {
+    if (!currentCourse && !search) return;
+    
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
 
     try {
-      const queryParam = debouncedSearch ? `&search=${encodeURIComponent(debouncedSearch)}` : "";
-      const res = await fetch(`/api/student/content?page=${pageNum}&limit=5&course=${encodeURIComponent(currentCourse)}${queryParam}`);
+      const courseParam = currentCourse ? `&course=${encodeURIComponent(currentCourse)}` : "";
+      const queryParam = search ? `&search=${encodeURIComponent(search)}` : "";
+      const res = await fetch(`/api/student/content?page=${pageNum}&limit=5${courseParam}${queryParam}`);
       if (res.ok) {
         const data = await res.json();
         setContents(prev => pageNum === 1 ? data.content : [...prev, ...data.content]);
@@ -67,8 +69,8 @@ export default function StudentContent() {
   };
 
   useEffect(() => {
-    if (selectedCourse) {
-      fetchContents(1, selectedCourse);
+    if (debouncedSearch || selectedCourse) {
+      fetchContents(1, selectedCourse, debouncedSearch);
     } else {
       setContents([]);
     }
@@ -95,7 +97,7 @@ export default function StudentContent() {
 
       <div className="glass-panel" style={{ padding: '2rem' }}>
         
-        {!selectedCourse ? (
+        {(!selectedCourse && !debouncedSearch) ? (
           <>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Available Courses</h2>
             {courses.length === 0 ? (
@@ -129,13 +131,22 @@ export default function StudentContent() {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
               <button 
-                onClick={() => setSelectedCourse(null)}
+                onClick={() => {
+                  setSelectedCourse(null);
+                  setSearchQuery("");
+                }}
                 className="btn-outline"
                 style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '2rem' }}
               >
-                &larr; Back to Courses
+                &larr; Back
               </button>
-              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Materials for: <span style={{color: 'var(--primary)'}}>{selectedCourse}</span></h2>
+              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>
+                {selectedCourse ? (
+                  <>Materials for: <span style={{color: 'var(--primary)'}}>{selectedCourse}</span></>
+                ) : (
+                  <>Global Search Results</>
+                )}
+              </h2>
             </div>
 
             {loading ? (

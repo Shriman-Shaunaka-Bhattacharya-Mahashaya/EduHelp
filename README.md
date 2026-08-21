@@ -40,12 +40,12 @@ The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - Built-in notification badges and unread message tracking.
 - Automatic privacy and database optimization via **6-month TTL auto-deletion** for old messages.
 
-### 8. Educational Materials & Full-Text Search
+### 8. Educational Materials & Semantic Vector Search
 - **Course-Based Organization**: Materials are structurally grouped into dynamic Course Folders. The system auto-aggregates a distinct list of subjects for students and instructors, keeping the workspace completely clutter-free.
 - Instructors can upload required reading materials, study guides, syllabus documents, and **Video Lectures** (MP4, WebM, OGG) natively to the portal.
 - Video materials are securely hosted, optimized for rapid streaming, and rendered in sleek native HTML5 embedded players directly inside the dashboard.
 - **Smart OCR Fallback**: Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
-- Features a high-performance **Full-Text Search Engine** utilizing MongoDB's native `$text` indexing, providing ultra-fast, weighted keyword searches across document titles, courses, and tags.
+- **Global Semantic Vector Search**: The student search bar is powered by a RAG-like vector space. When instructors upload content, its metadata (title, course, tags, description) is converted into a mathematical vector. When students search, their query is embedded in real-time, retrieving the most semantically relevant materials instantly, even if they don't type the exact keyword.
 
 ### 9. RAG AI Assistant (Retrieval-Augmented Generation)
 - **Local Embedded Vectors:** Uploaded materials are dynamically parsed and converted into 384-dimensional mathematical vectors natively inside the Node.js V8 engine using `@xenova/transformers` (Zero latency, zero external API costs).
@@ -122,10 +122,12 @@ Before you begin, ensure you have the following installed:
    ```
 
 3. **Configure Atlas Vector Search**:
-   For the AI Chatbot to work, you must create a Vector Search Index in your MongoDB Atlas dashboard.
+   For the AI features to work, you must create **two** Vector Search Indexes in your MongoDB Atlas dashboard.
+   
+   **Index 1: For the AI Chatbot (RAG)**
    - Go to MongoDB Atlas -> **Atlas Search**.
    - Click **Create Search Index** and choose **Atlas Vector Search** (JSON Editor).
-   - Select your database and the `documentchunks` collection (Note: you must upload at least one educational material via the dashboard first so Mongoose creates the collection).
+   - Select your database and the `documentchunks` collection.
    - Name the index exactly: **`VectorSearchIndex`**
    - Paste the following configuration:
    ```json
@@ -144,7 +146,41 @@ Before you begin, ensure you have the following installed:
      ]
    }
    ```
-   - Click Create. Wait until the index is `Active`.
+   
+   **Index 2: For Global Semantic Search (Materials)**
+   - Click **Create Search Index** again and choose **Atlas Vector Search** (JSON Editor).
+   - Select your database and the `contents` collection.
+   - Name the index exactly: **`ContentVectorIndex`**
+   - Paste the following configuration:
+   ```json
+   {
+     "fields": [
+       {
+         "numDimensions": 384,
+         "path": "embedding",
+         "similarity": "cosine",
+         "type": "vector"
+       },
+       {
+         "path": "targetDepartment",
+         "type": "filter"
+       },
+       {
+         "path": "targetBatch",
+         "type": "filter"
+       },
+       {
+         "path": "expireAt",
+         "type": "filter"
+       },
+       {
+         "path": "course",
+         "type": "filter"
+       }
+     ]
+   }
+   ```
+   - Wait until both indexes are `Active`.
 
 ## Docker Deployment (Local)
 The application is fully containerized and uses Next.js standalone builds for extreme optimization.

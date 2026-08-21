@@ -14,6 +14,7 @@ export interface IContent extends Document {
     resourceType: string;
   };
   expireAt: Date;
+  embedding?: number[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,7 @@ const ContentSchema = new Schema<IContent>(
       resourceType: { type: String, default: 'document' },
     },
     expireAt: { type: Date, required: true },
+    embedding: { type: [Number] },
   },
   { timestamps: true }
 );
