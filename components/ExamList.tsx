@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import UploadExamForm from "./UploadExamForm";
 
 function ExamCard({ exam, router, onEdit, onDelete }: { exam: any, router: any, onEdit: (e: any) => void, onDelete: (id: string) => void }) {
   return (
@@ -63,6 +64,7 @@ function ExamCard({ exam, router, onEdit, onDelete }: { exam: any, router: any, 
 
 export default function ExamList() {
   const router = useRouter();
+  const [showUploadForm, setShowUploadForm] = useState(false);
   
   const [practiceExams, setPracticeExams] = useState<any[]>([]);
   const [practicePage, setPracticePage] = useState(1);
@@ -164,12 +166,39 @@ export default function ExamList() {
   };
 
   useEffect(() => {
-    fetchExams('practice', 1);
-    fetchExams('scheduled', 1);
-  }, []);
+    if (!showUploadForm) {
+      // Refresh exams when returning to list view
+      fetchExams('practice', 1);
+      fetchExams('scheduled', 1);
+    }
+  }, [showUploadForm]);
+
+  if (showUploadForm) {
+    return (
+      <div>
+        <button 
+          className="btn-outline" 
+          onClick={() => setShowUploadForm(false)} 
+          style={{ marginBottom: '1.5rem' }}
+        >
+          ← Back to Exams
+        </button>
+        <UploadExamForm onUploadSuccess={() => setShowUploadForm(false)} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-2rem' }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowUploadForm(true)}
+        >
+          + Add New Exam
+        </button>
+      </div>
+
       {/* Scheduled Exams Section */}
       <div>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>

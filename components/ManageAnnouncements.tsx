@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ManageAnnouncements() {
+  const [showForm, setShowForm] = useState(false);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -110,6 +111,7 @@ export default function ManageAnnouncements() {
       setError(err.message);
     } finally {
       setSubmitLoading(false);
+      setShowForm(false);
     }
   };
 
@@ -122,9 +124,11 @@ export default function ManageAnnouncements() {
     setAttachment(null);
     setEditingId(null);
     setError("");
+    setShowForm(false);
   };
 
   const handleEdit = (ann: any) => {
+    setShowForm(true);
     setEditingId(ann._id);
     setTitle(ann.title);
     setMessage(ann.message);
@@ -146,10 +150,18 @@ export default function ManageAnnouncements() {
     }
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+  if (showForm) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <button 
+          className="btn-outline" 
+          onClick={resetForm} 
+          style={{ alignSelf: 'flex-start' }}
+        >
+          ← Back to Announcements
+        </button>
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
           {editingId ? "Edit Announcement" : "Create New Announcement"}
         </h2>
         
@@ -245,6 +257,20 @@ export default function ManageAnnouncements() {
             )}
           </div>
         </form>
+      </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-1rem' }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowForm(true)}
+        >
+          + Add New Announcement
+        </button>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ManageContent() {
+  const [showForm, setShowForm] = useState(false);
   const [courses, setCourses] = useState<string[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   
@@ -117,6 +118,7 @@ export default function ManageContent() {
       setError(err.message);
     } finally {
       setSubmitLoading(false);
+      setShowForm(false);
     }
   };
 
@@ -131,12 +133,12 @@ export default function ManageContent() {
     setAttachment(null);
     setEditingId(null);
     setError("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setShowForm(false);
   };
 
   const handleEdit = (c: any) => {
+    setShowForm(true);
     setEditingId(c._id);
     setTitle(c.title);
     setCourse(c.course);
@@ -148,7 +150,6 @@ export default function ManageContent() {
     setAttachment(null); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to permanently delete this content?")) return;
     try {
@@ -160,11 +161,18 @@ export default function ManageContent() {
     }
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+  if (showForm) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <button 
+          className="btn-outline" 
+          onClick={resetForm} 
+          style={{ alignSelf: 'flex-start' }}
+        >
+          ← Back to Materials
+        </button>
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
           {editingId ? "Edit Educational Content" : "Upload New Educational Content"}
         </h2>
         
@@ -243,6 +251,20 @@ export default function ManageContent() {
             )}
           </div>
         </form>
+      </div>
+    </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-1rem' }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowForm(true)}
+        >
+          + Add New Material
+        </button>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>

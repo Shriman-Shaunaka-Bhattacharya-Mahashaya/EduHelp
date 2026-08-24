@@ -11,7 +11,7 @@ import Messaging from "./Messaging";
 import ManageClasses from "./ManageClasses";
 
 export default function InstructorDashboard() {
-  const [activeTab, setActiveTab] = useState<"upload" | "list" | "announcements" | "assignments" | "content" | "classes" | "messages" | "profile">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "announcements" | "assignments" | "content" | "classes" | "messages" | "profile">("list");
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   const fetchUnreadMessages = async () => {
@@ -47,18 +47,7 @@ export default function InstructorDashboard() {
         >
           My Exams
         </button>
-        <button
-          onClick={() => setActiveTab("upload")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "upload" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "upload" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Upload New Exam
-        </button>
+
         <button
           onClick={() => setActiveTab("announcements")}
           style={{
@@ -152,7 +141,7 @@ export default function InstructorDashboard() {
 
       <div className="animate-fade-in">
         {activeTab === "list" && <ExamList />}
-        {activeTab === "upload" && <UploadExamForm onUploadSuccess={() => setActiveTab("list")} />}
+
         {activeTab === "announcements" && <ManageAnnouncements />}
         {activeTab === "assignments" && <ManageAssignments />}
         {activeTab === "content" && <ManageContent />}

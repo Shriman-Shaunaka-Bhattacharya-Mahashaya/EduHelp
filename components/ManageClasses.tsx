@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function ManageClasses() {
   const router = useRouter();
+  const [showForm, setShowForm] = useState(false);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +70,7 @@ export default function ManageClasses() {
       setScheduledAt("");
       setTargetDepartment("");
       setTargetBatch("");
-      
+      setShowForm(false);
       fetchClasses();
     } catch (err: any) {
       setError(err.message);
@@ -107,12 +108,19 @@ export default function ManageClasses() {
     }
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      {/* Schedule Form */}
-      <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Schedule Online Class</h2>
+  if (showForm) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <button 
+          className="btn-outline" 
+          onClick={() => setShowForm(false)} 
+          style={{ alignSelf: 'flex-start' }}
+        >
+          ← Back to Classes
+        </button>
+        {/* Schedule Form */}
+        <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Schedule Online Class</h2>
         
         {error && <div style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error}</div>}
         {success && <div style={{ color: 'var(--success)', marginBottom: '1rem' }}>{success}</div>}
@@ -154,6 +162,20 @@ export default function ManageClasses() {
             {submitting ? "Scheduling..." : "Schedule Class"}
           </button>
         </form>
+      </div>
+    </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-1rem' }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowForm(true)}
+        >
+          + Schedule New Class
+        </button>
       </div>
 
       {/* Class List */}

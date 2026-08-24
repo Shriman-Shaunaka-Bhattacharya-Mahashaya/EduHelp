@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
 
 export default function ManageAssignments() {
+  const [showForm, setShowForm] = useState(false);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -119,6 +120,7 @@ export default function ManageAssignments() {
       setError(err.message);
     } finally {
       setSubmitLoading(false);
+      setShowForm(false);
     }
   };
 
@@ -134,9 +136,11 @@ export default function ManageAssignments() {
     setAttachment(null);
     setEditingId(null);
     setError("");
+    setShowForm(false);
   };
 
   const handleEdit = (assign: any) => {
+    setShowForm(true);
     setEditingId(assign._id);
     setTitle(assign.title);
     setCourseName(assign.courseName);
@@ -203,12 +207,19 @@ export default function ManageAssignments() {
     }
   };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
-      {/* Create/Edit Form */}
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+  if (showForm) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <button 
+          className="btn-outline" 
+          onClick={resetForm} 
+          style={{ alignSelf: 'flex-start' }}
+        >
+          ← Back to Assignments
+        </button>
+        {/* Create/Edit Form */}
+        <div className="glass-panel" style={{ padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
           {editingId ? "Edit Assignment" : "Create New Assignment"}
         </h2>
         
@@ -285,6 +296,20 @@ export default function ManageAssignments() {
             )}
           </div>
         </form>
+      </div>
+    </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-1rem' }}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowForm(true)}
+        >
+          + Add New Assignment
+        </button>
       </div>
 
       {/* List Assignments */}
