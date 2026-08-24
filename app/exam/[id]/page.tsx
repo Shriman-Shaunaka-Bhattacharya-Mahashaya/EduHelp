@@ -21,11 +21,11 @@ export default function ExamPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [examEndTime, setExamEndTime] = useState<number | null>(null);
 
-  // Proctoring States
   const [strikes, setStrikes] = useState<number>(0);
   const [warningMessage, setWarningMessage] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const hasStartedFullscreenRef = useRef(false);
+  const lastStrikeTimeRef = useRef(0);
 
   // To track time per question
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -67,6 +67,11 @@ export default function ExamPage() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && !isSubmittingRef.current) {
+        const now = Date.now();
+        // Debounce strikes by 2 seconds to prevent double strikes from simultaneous Alt-Tab (visibility + fullscreen events)
+        if (now - lastStrikeTimeRef.current < 2000) return;
+        lastStrikeTimeRef.current = now;
+
         const cachedStrikes = parseInt(localStorage.getItem(`exam_strikes_${examId}`) || '0');
         const newStrikes = cachedStrikes + 1;
         
@@ -75,7 +80,7 @@ export default function ExamPage() {
 
         if (newStrikes >= 3) {
           setWarningMessage("Exam auto-submitted due to repeated tab switching.");
-          handleSubmitExam();
+          handleSubmitExam(true);
         } else {
           setWarningMessage(`Warning ${newStrikes}/2: Tab switching is strictly prohibited. Your exam will be auto-submitted on the next violation.`);
         }
@@ -94,6 +99,10 @@ export default function ExamPage() {
       if (!document.fullscreenElement && !isSubmittingRef.current) {
         setIsFullscreen(false);
         if (hasStartedFullscreenRef.current) {
+          const now = Date.now();
+          if (now - lastStrikeTimeRef.current < 2000) return;
+          lastStrikeTimeRef.current = now;
+
           const cachedStrikes = parseInt(localStorage.getItem(`exam_strikes_${examId}`) || '0');
           const newStrikes = cachedStrikes + 1;
           
@@ -102,7 +111,7 @@ export default function ExamPage() {
 
           if (newStrikes >= 3) {
             setWarningMessage("Exam auto-submitted due to escaping full screen repeatedly.");
-            handleSubmitExam();
+            handleSubmitExam(true);
           } else {
             setWarningMessage(`Warning ${newStrikes}/2: Escaping full screen is strictly prohibited. Your exam will be auto-submitted on the next violation.`);
           }
@@ -194,7 +203,8 @@ export default function ExamPage() {
 
       if (remaining <= 0) {
         clearInterval(timer);
-        handleSubmitExam(); // Auto submit
+        setWarningMessage("Exam auto-submitted because time is up.");
+        handleSubmitExam(true); // Auto submit
       }
     }, 1000);
 
@@ -256,7 +266,7 @@ export default function ExamPage() {
     });
   };
 
-  const handleSubmitExam = async () => {
+  const handleSubmitExam = async (isAutoSubmit = false) => {
     if (isSubmittingRef.current) return;
     setIsSubmitting(true);
     isSubmittingRef.current = true;
@@ -295,9 +305,9 @@ export default function ExamPage() {
     } catch (err: any) {
       console.warn("Offline submit: Saved locally for background sync.");
     } finally {
-      // If we are auto-submitting from a 3rd strike, the overlay will handle the redirect.
+      // If we are auto-submitting from a 3rd strike or timeout, the overlay will handle the redirect.
       // Otherwise, redirect immediately.
-      if (!warningMessage || !warningMessage.includes("auto-submitted")) {
+      if (!isAutoSubmit) {
         router.push("/dashboard");
       }
     }
