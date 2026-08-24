@@ -16,7 +16,7 @@ The system is built to handle thousands of exams and attempts simultaneously. Da
 The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
 - **Absolute Time Strategy:** The timer tracks the real-world system clock. If a student tries to hack the system by pausing the browser via Developer Tools, the clock instantly catches up the moment they unpause.
 - **Physical Lockdown:** Text selection, copying, cutting, pasting, and right-clicking are fully disabled. Keyboard shortcuts like `Ctrl+C`, `Ctrl+V`, `Ctrl+P`, and `Ctrl+S` are actively intercepted and blocked.
-- **3-Strike Penalty System:** The system monitors tab visibility. If a student leaves the tab, they receive a massive warning overlay. Strikes are persistently cached to `localStorage` (defeating page refreshes). On the 3rd strike, the exam is forcibly locked and auto-submitted.
+- **3-Strike Penalty System:** The system monitors tab visibility and window state. Students are forced to enter **Full Screen Mode** to take the exam. If a student switches tabs or escapes full screen, they receive a massive warning overlay and are forced to re-enter full screen. Strikes are persistently cached to `localStorage` (defeating page refreshes). On the 3rd strike, the exam is forcibly locked and auto-submitted.
 
 ### 4. Comprehensive Assignments & Grading
 - Instructors can create rich-text assignments targeted at specific departments and batches, optionally attach resources, and set strict deadlines and max marks.

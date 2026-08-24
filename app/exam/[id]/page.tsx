@@ -24,6 +24,8 @@ export default function ExamPage() {
   // Proctoring States
   const [strikes, setStrikes] = useState<number>(0);
   const [warningMessage, setWarningMessage] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const hasStartedFullscreenRef = useRef(false);
 
   // To track time per question
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -83,6 +85,37 @@ export default function ExamPage() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [status, examData, isSubmitting]);
+
+  // 3. Fullscreen Hook
+  useEffect(() => {
+    if (status !== "authenticated" || !examData || isSubmitting) return;
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !isSubmittingRef.current) {
+        setIsFullscreen(false);
+        if (hasStartedFullscreenRef.current) {
+          const cachedStrikes = parseInt(localStorage.getItem(`exam_strikes_${examId}`) || '0');
+          const newStrikes = cachedStrikes + 1;
+          
+          localStorage.setItem(`exam_strikes_${examId}`, newStrikes.toString());
+          setStrikes(newStrikes);
+
+          if (newStrikes >= 3) {
+            setWarningMessage("Exam auto-submitted due to escaping full screen repeatedly.");
+            handleSubmitExam();
+          } else {
+            setWarningMessage(`Warning ${newStrikes}/2: Escaping full screen is strictly prohibited. Your exam will be auto-submitted on the next violation.`);
+          }
+        }
+      } else if (document.fullscreenElement) {
+        setIsFullscreen(true);
+        hasStartedFullscreenRef.current = true;
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [status, examData, isSubmitting, examId]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -299,14 +332,43 @@ export default function ExamPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem', userSelect: 'none', WebkitUserSelect: 'none' }}>
       
-      {/* Warning Overlay */}
-      {warningMessage && (
+      {/* Warning Overlay (when in fullscreen) */}
+      {warningMessage && isFullscreen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: '#1e1e1e', padding: '3rem', borderRadius: '1rem', border: '2px solid var(--danger)', maxWidth: '500px', textAlign: 'center' }}>
             <h2 style={{ color: 'var(--danger)', fontSize: '2rem', marginBottom: '1rem' }}>⚠️ Warning</h2>
             <p style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '2rem' }}>{warningMessage}</p>
             {!warningMessage.includes("auto-submitted") ? (
               <button className="btn-primary" onClick={() => setWarningMessage("")}>I Understand</button>
+            ) : (
+              <button className="btn-primary" onClick={() => router.push('/dashboard')}>Return to Dashboard</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Requirement Overlay */}
+      {!isFullscreen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--background)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--surface)', padding: '3rem', borderRadius: '1rem', border: '1px solid var(--surface-border)', maxWidth: '500px', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: warningMessage ? 'var(--danger)' : '#fff' }}>
+              {warningMessage ? '⚠️ Warning' : 'Fullscreen Required'}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '2rem' }}>
+              {warningMessage || "This exam requires full screen mode to ensure a proctored environment. You will receive a strike if you exit full screen during the exam."}
+            </p>
+            {!warningMessage.includes("auto-submitted") ? (
+              <button className="btn-primary" onClick={async () => {
+                try {
+                  await document.documentElement.requestFullscreen();
+                  if (warningMessage) setWarningMessage("");
+                } catch (err) {
+                  console.error("Fullscreen request failed", err);
+                  alert("Please enable full screen permissions in your browser.");
+                }
+              }}>
+                {warningMessage ? "I Understand, Return to Exam" : "Enter Full Screen to Start"}
+              </button>
             ) : (
               <button className="btn-primary" onClick={() => router.push('/dashboard')}>Return to Dashboard</button>
             )}
