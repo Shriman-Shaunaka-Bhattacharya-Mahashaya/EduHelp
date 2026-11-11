@@ -29,6 +29,18 @@ export default function NotificationBell() {
 
   // Close dropdown on outside click
   useEffect(() => {
+    if (!open) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        ref.current?.querySelector('button')?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
@@ -41,7 +53,8 @@ export default function NotificationBell() {
   const markAllAsRead = async () => {
     if (unreadCount === 0) return;
     try {
-      await fetch("/api/notifications", { method: "PUT" });
+      const response = await fetch("/api/notifications", { method: "PUT" });
+      if (!response.ok) return;
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (e) {
@@ -52,7 +65,8 @@ export default function NotificationBell() {
   const markAsRead = async (id: string, read: boolean) => {
     if (read) return;
     try {
-      await fetch(`/api/notifications/${id}`, { method: "PUT" });
+      const response = await fetch(`/api/notifications/${id}`, { method: "PUT" });
+      if (!response.ok) return;
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (e) {
@@ -62,13 +76,15 @@ export default function NotificationBell() {
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <button 
+      <button aria-label="Notifications" aria-expanded={open} aria-controls="notifications-panel"
+        onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}
         onClick={() => {
           setOpen(!open);
           if (!open) fetchNotifications();
         }}
         style={{
           background: "transparent",
+          color: "var(--text-primary)",
           border: "none",
           fontSize: "1.5rem",
           cursor: "pointer",
@@ -76,21 +92,23 @@ export default function NotificationBell() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: "40px",
-          height: "40px",
+          width: "44px",
+          height: "44px",
+          padding: 0,
+          flexShrink: 0,
           borderRadius: "50%",
           transition: "background 0.2s"
         }}
-        onMouseOver={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+        onMouseOver={(e) => (e.currentTarget.style.background = "var(--surface-border)")}
         onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
       >
-        🔔
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
         {unreadCount > 0 && (
           <span style={{
             position: "absolute",
             top: "2px",
             right: "2px",
-            background: "var(--danger)",
+            background: "#b42338",
             color: "white",
             fontSize: "0.6rem",
             fontWeight: "bold",
@@ -108,13 +126,13 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div style={{
+        <div id="notifications-panel" role="region" aria-label="Notifications" onKeyDown={event => { if (event.key === "Escape") setOpen(false); }} style={{
           position: "absolute",
           top: "100%",
           right: "0",
-          width: "350px",
+          width: "min(350px, calc(100vw - 2rem))",
           maxHeight: "400px",
-          background: "rgba(10, 10, 20, 0.95)",
+          background: "var(--surface)",
           backdropFilter: "blur(10px)",
           border: "1px solid var(--surface-border)",
           borderRadius: "0.5rem",
@@ -131,7 +149,7 @@ export default function NotificationBell() {
             display: "flex", 
             justifyContent: "space-between",
             alignItems: "center",
-            background: "rgba(255,255,255,0.05)"
+            background: "var(--surface-hover)"
           }}>
             <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: "bold" }}>Notifications</h3>
             {unreadCount > 0 && (
@@ -152,21 +170,23 @@ export default function NotificationBell() {
             ) : (
               notifications.map((n) => (
                 <div 
-                  key={n._id} 
+                  key={n._id}
+                  role="button" tabIndex={0}
+                  onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); markAsRead(n._id, n.read); } }}
                   onClick={() => markAsRead(n._id, n.read)}
                   style={{ 
                     padding: "1rem", 
-                    borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    borderBottom: "1px solid var(--surface-hover)",
                     background: n.read ? "transparent" : "rgba(59, 130, 246, 0.1)",
                     cursor: n.read ? "default" : "pointer",
                     transition: "background 0.2s"
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-                    <strong style={{ fontSize: "0.9rem", color: n.read ? "var(--text-secondary)" : "#fff" }}>
+                    <strong style={{ fontSize: "0.9rem", color: n.read ? "var(--text-secondary)" : "var(--text-primary)" }}>
                       {n.title}
                     </strong>
-                    {!n.read && <span style={{ width: "8px", height: "8px", background: "var(--primary)", borderRadius: "50%", marginTop: "4px" }}></span>}
+                    {!n.read && <span style={{ width: "8px", height: "8px", background: "var(--primary-solid)", borderRadius: "50%", marginTop: "4px" }}></span>}
                   </div>
                   <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: "1.4" }}>
                     {n.message}

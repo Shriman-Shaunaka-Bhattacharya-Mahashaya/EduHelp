@@ -129,7 +129,7 @@ export default function ClassMeetingRoom() {
   // Show loading state until token is fetched from backend
   if (status === "loading" || !classId || !zegoToken || !zegoAppId || !zegoUserId) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: '#fff' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: 'var(--text-primary)' }}>
         <div className="spinner"></div>
         <div style={{ marginTop: '1rem' }}>Preparing Secure Video Room...</div>
       </div>
