@@ -25,34 +25,73 @@ function LoginContent() {
     password: "",
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const [editableFields, setEditableFields] = useState({ email: false, password: false });
+
+  const clearUntouchedFields = useCallback(() => {
+    // Password managers can fill the DOM after hydration without a React change.
+    formRef.current?.querySelectorAll<HTMLInputElement>("input[readonly]").forEach(input => {
+      input.value = "";
+      input.defaultValue = "";
+    });
+  }, []);
 
   const clearCredentials = useCallback(() => {
     setFormData({ email: "", password: "" });
+    setEditableFields({ email: false, password: false });
     // Also clear values restored directly by the browser, outside React state.
     formRef.current?.querySelectorAll<HTMLInputElement>("input").forEach(input => {
       input.value = "";
+      input.defaultValue = "";
+      input.readOnly = true;
     });
   }, []);
 
   useEffect(() => {
     // Clear browser-restored values on mount and when returning via Back/Forward.
-    formRef.current?.reset();
+    clearUntouchedFields();
+    // A one-time reset misses autofill that arrives later. Never scrub fields
+    // the person has already focused: their typing and paste must be preserved.
+    const autofillCheck = window.setInterval(clearUntouchedFields, 250);
     window.addEventListener("pageshow", clearCredentials);
     window.addEventListener("pagehide", clearCredentials);
+    window.addEventListener("focus", clearUntouchedFields);
     return () => {
+      window.clearInterval(autofillCheck);
       window.removeEventListener("pageshow", clearCredentials);
       window.removeEventListener("pagehide", clearCredentials);
+      window.removeEventListener("focus", clearUntouchedFields);
     };
-  }, [clearCredentials]);
+  }, [clearCredentials, clearUntouchedFields]);
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    if (!input.readOnly) return;
+    const field = input.name as "email" | "password";
+    // Discard any saved value before this field becomes editable.
+    input.value = "";
+    input.defaultValue = "";
+    setFormData(previous => ({ ...previous, [field]: "" }));
+    setEditableFields(previous => ({ ...previous, [field]: true }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.currentTarget.readOnly) {
+      e.currentTarget.value = "";
+      return;
+    }
+    const { name, value } = e.currentTarget;
+    setFormData(previous => ({ ...previous, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccessMsg("");
+    if (!editableFields.email || !editableFields.password || !formData.email || !formData.password) {
+      clearCredentials();
+      setError("Enter your email and password to sign in.");
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -62,8 +101,8 @@ function LoginContent() {
         password: formData.password,
       });
 
-      if (res?.error) {
-        throw new Error(res.error);
+      if (!res?.ok || res.error) {
+        throw new Error(res?.error || "Unable to sign in. Please try again.");
       }
 
       router.push("/dashboard");
@@ -94,12 +133,12 @@ function LoginContent() {
         <form ref={formRef} onSubmit={handleSubmit} className={styles.form} autoComplete="off">
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="email">Email</label>
-            <input type="email" id="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="on" />
+            <input type="email" id="email" name="email" required readOnly={!editableFields.email} onFocus={handleFocus} value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="off" />
           </div>
           
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="password">Password</label>
-            <input type="password" id="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="current-password" />
+            <input type="password" id="password" name="password" required readOnly={!editableFields.password} onFocus={handleFocus} value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="new-password" />
           </div>
 
           <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={isLoading} aria-busy={isLoading}>
