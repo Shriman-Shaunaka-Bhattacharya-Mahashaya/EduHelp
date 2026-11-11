@@ -155,3 +155,20 @@ table { font-variant-numeric: tabular-nums; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important; }
   button:active:not(:disabled) { transform: none; }
 }
+
+/* Google Meet class handoff */
+.meeting-shell { min-height: 100dvh; padding: clamp(1rem, 4vw, 3rem); }
+.meeting-page-header { max-width: 72rem; margin: 0 auto 3rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.meeting-card { max-width: 44rem; margin: 0 auto; padding: clamp(1.25rem, 4vw, 3rem); }
+.meeting-card h1 { margin: 1rem 0; font-size: clamp(1.8rem, 5vw, 2.5rem); overflow-wrap: anywhere; }
+.meeting-card h2 { font-size: 1.25rem; margin-bottom: .75rem; }
+.meeting-card p { line-height: 1.7; }
+.meeting-description { color: var(--text-secondary); margin-bottom: 2rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.meeting-join { display: inline-flex; gap: .75rem; margin: 1.5rem 0; }
+.meeting-host-actions { border-top: 1px solid var(--surface-border); padding-top: 1.5rem; margin-top: 1.5rem; }
+.meeting-host-actions button { margin-top: 1rem; }
+.meeting-back { display: inline-block; margin-top: 2rem; color: var(--primary); }
+.meeting-loading { display: grid; justify-items: center; gap: 1rem; padding: 2rem; }
+.class-help { margin-top: .65rem; color: var(--text-secondary); font-size: .875rem; line-height: 1.6; }
+.class-help a { color: var(--primary); text-decoration: underline; }
+.class-error { color: var(--danger); margin-bottom: 1rem; }

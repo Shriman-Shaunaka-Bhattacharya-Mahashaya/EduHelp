@@ -49,6 +49,7 @@ export async function GET(req: Request) {
     };
 
     const classes = await OnlineClass.find(baseQuery)
+      .select('-meetingUrl')
       .populate('instructorId', 'fullName email')
       .sort({ scheduledAt: 1 }) // Earliest first
       .limit(50);

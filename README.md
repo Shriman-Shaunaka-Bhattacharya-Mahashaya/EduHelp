@@ -117,10 +117,6 @@ Before you begin, ensure you have the following installed:
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
 
-   # ZegoCloud Keys for Video Classes
-   # IMPORTANT: Do NOT prefix these with NEXT_PUBLIC_. They must remain secret on the server!
-   ZEGO_APP_ID=your_zego_app_id
-   ZEGO_SERVER_SECRET=your_zego_server_secret
 
    # Cron Job Security (For Vercel)
    CRON_SECRET=your_secure_cron_password
@@ -212,3 +208,18 @@ This application is natively optimized for Vercel's serverless infrastructure.
 Choose System, Light, or Dark in the authentication or dashboard header. Your preference persists across visits. Fonts are bundled locally.
 
 GitHub Actions runs quality checks and browser tests when you push or open a pull request. See [TESTING.md](TESTING.md) for commands, coverage boundaries, and reports, and [DESIGN.md](DESIGN.md) for UI conventions.
+
+## Online classes with Google Meet
+
+Online classes use instructor-provided Google Meet links. No video SDK, Google API key, OAuth integration, or ZegoCloud subscription is required.
+
+1. In [Google Meet](https://meet.google.com/), choose **New meeting > Create a meeting for later** ([Google instructions](https://support.google.com/meet/answer/9302870)). Use the Google account that will host the lesson.
+2. In the instructor dashboard, choose **Schedule New Class**, paste the link, and set the schedule and optional department/batch restrictions. Standard links such as `https://meet.google.com/abc-defg-hij` are supported; query parameters are removed.
+3. Choose **Start Class** when ready, then **Open Google Meet**. Eligible students can join live classes from their dashboard. Google Meet opens in a new tab and manages admission, microphone, camera, screen sharing, and host controls.
+4. End the call in Google Meet, then choose **Mark class completed** in EduHelp. Completing an EduHelp class does not end the Google call or revoke a previously shared meeting link.
+
+For classes created before this migration, select **Add Meet link** (or **Edit Class**) and save a Google Meet URL before starting them. Old Zego credentials can be removed from deployment configuration; they are no longer used.
+
+EduHelp checks instructor ownership and student audience restrictions before returning a live class link. Scheduled and completed class links are not returned to students. A shared Meet URL remains subject to Google's access controls.
+
+Free personal Google accounts currently support up to 100 participants and a 60-minute group meeting limit; check [Google Meet plans and limits](https://workspace.google.com/products/meet/) for your account before scheduling longer lessons. Creating and hosting meetings requires a Google account. This integration does not automatically create meetings, sync Google Calendar, record attendance, or record calls.

@@ -23,7 +23,7 @@ Before the first browser run, run `npx playwright install` (Linux CI also uses `
 - Exam start/resume, scheduled time boundaries, completed attempts, answer secrecy, submission validation, server-side scoring, and unanswered questions.
 - Notification scoping, unread counts, pagination limits, and bulk read updates.
 - Document text extraction, mocked OCR/Office parsing, temporary-file cleanup, chunk bounds, and invalid chunk parameters.
-- Model requirements and defaults, and encrypted video-token contents and expiration.
+- Model requirements and defaults, and Google Meet URL validation and class audience restrictions.
 - Chromium, Firefox, WebKit, and mobile Chromium flows; both themes; WCAG automated accessibility checks; keyboard navigation; reduced motion; responsive overflow; and student/instructor dashboard navigation.
 
 ## GitHub Actions
@@ -34,7 +34,7 @@ After pushing this configuration yourself, you can make the two job checks requi
 
 ## Honest coverage boundaries
 
-This suite is a regression foundation, not a claim of exhaustive testing. The initial local run has 189 unit/component/API tests and 64 browser scenarios. Instrumented line coverage across the configured application files is about 24.6%; browser coverage is not merged into that figure. Theme utilities and registration API coverage are enforced at 100%, with explicit thresholds for the theme provider. The coverage report includes untested application files so missing coverage remains visible. Browser fixtures validate the actual rendered frontend but do not exercise live MongoDB, Cloudinary, Groq, Atlas vector search, OCR binaries, or ZegoCloud. Those integrations, full proctoring/offline recovery, destructive cleanup jobs, and load/security testing need dedicated isolated test environments and further scenarios. No real external-service credentials are used by these tests.
+This suite is a regression foundation, not a claim of exhaustive testing. The initial local run has 189 unit/component/API tests and 64 browser scenarios. Instrumented line coverage across the configured application files is about 24.6%; browser coverage is not merged into that figure. Theme utilities and registration API coverage are enforced at 100%, with explicit thresholds for the theme provider. The coverage report includes untested application files so missing coverage remains visible. Browser fixtures validate the actual rendered frontend but do not exercise live MongoDB, Cloudinary, Groq, Atlas vector search, OCR binaries, or live Google Meet calls. Those integrations, full proctoring/offline recovery, destructive cleanup jobs, and load/security testing need dedicated isolated test environments and further scenarios. No real external-service credentials are used by these tests.
 
 The repository already contained lint debt. `eslint-suppressions.json` records the existing violation counts by file and rule using ESLint bulk suppressions. CI rejects additional violations instead of disabling those rules. As existing files are cleaned up, run `npx eslint . --prune-suppressions` and review the reduced baseline. Do not regenerate the baseline to hide new violations. Existing warning-level rules remain visible. TypeScript errors are no longer skipped during builds.
 

@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { normalizeMeetUrl } from '@/lib/onlineClasses';
 
 export interface IOnlineClass extends Document {
   instructorId: mongoose.Types.ObjectId;
@@ -6,6 +7,7 @@ export interface IOnlineClass extends Document {
   description: string;
   scheduledAt: Date;
   durationMinutes: number;
+  meetingUrl?: string; // Older classes need an instructor to add their Meet link.
   targetDepartment?: string;
   targetBatch?: number;
   targetStudents?: mongoose.Types.ObjectId[];
@@ -19,6 +21,12 @@ const OnlineClassSchema: Schema = new Schema({
   description: { type: String, required: true },
   scheduledAt: { type: Date, required: true },
   durationMinutes: { type: Number, required: true, default: 60 },
+  meetingUrl: {
+    type: String,
+    required: true,
+    set: (value: unknown) => normalizeMeetUrl(value) || value,
+    validate: { validator: (value: string) => normalizeMeetUrl(value) !== null, message: 'A valid Google Meet link is required' },
+  },
   targetDepartment: { type: String },
   targetBatch: { type: Number },
   targetStudents: [{ type: Schema.Types.ObjectId, ref: 'User' }],

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 import connectDB from '../../../../../lib/mongodb';
 import OnlineClass from '../../../../../models/OnlineClass';
+import { normalizeMeetUrl, parseClassDetails } from '@/lib/onlineClasses';
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -16,7 +17,12 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     const classId = params.id;
     const body = await req.json();
 
-    const { status, title, description, scheduledAt, durationMinutes } = body;
+    const parsed = parseClassDetails(body, true);
+    if ('error' in parsed) return NextResponse.json({ message: parsed.error }, { status: 400 });
+    const { status } = body;
+    if (status !== undefined && !['scheduled', 'ongoing', 'completed'].includes(status)) {
+      return NextResponse.json({ message: 'Invalid class status' }, { status: 400 });
+    }
 
     const existingClass = await OnlineClass.findById(classId);
 
@@ -28,13 +34,13 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
+    if (status === 'ongoing' && !normalizeMeetUrl(parsed.data.meetingUrl ?? existingClass.meetingUrl)) {
+      return NextResponse.json({ message: 'Add a Google Meet link using Edit Class before starting this class' }, { status: 409 });
+    }
+    Object.assign(existingClass, parsed.data);
     if (status) existingClass.status = status;
-    if (title) existingClass.title = title;
-    if (description) existingClass.description = description;
-    if (scheduledAt) existingClass.scheduledAt = new Date(scheduledAt);
-    if (durationMinutes) existingClass.durationMinutes = durationMinutes;
-
-    await existingClass.save();
+    // Allow old classes without a Meet link to be marked completed.
+    await existingClass.save({ validateModifiedOnly: true });
 
     return NextResponse.json({ message: 'Class updated', class: existingClass }, { status: 200 });
   } catch (error: any) {
