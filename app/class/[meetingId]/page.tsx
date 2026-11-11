@@ -77,7 +77,12 @@ function ClassMeeting({ classId }: { classId: string }) {
           {onlineClass.status === 'ongoing' ? <>
             <h2>Join on Google Meet</h2>
             <p>The video call opens in a new tab. Your instructor may need to admit you to the meeting.</p>
-            <a className="btn-primary meeting-join" href={onlineClass.meetingUrl} target="_blank" rel="noopener noreferrer">Open Google Meet <span aria-hidden="true">&nearr;</span></a>
+            <a className="btn-primary meeting-join" href={onlineClass.meetingUrl} target="_blank" rel="noopener noreferrer">
+              Open Google Meet
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+              </svg>
+            </a>
           </> : <p>{onlineClass.status === 'completed' ? 'This class is completed.' : 'Start the class to make the meeting available to students.'}</p>}
           {onlineClass.canManage && onlineClass.status !== 'completed' && <div className="meeting-host-actions">
             {onlineClass.status === 'scheduled'
