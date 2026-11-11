@@ -132,11 +132,12 @@ export default function NotificationBell() {
           right: "0",
           width: "min(350px, calc(100vw - 2rem))",
           maxHeight: "400px",
-          background: "var(--surface)",
-          backdropFilter: "blur(10px)",
+          background: "var(--glass-background)",
+          backdropFilter: "var(--glass-filter)",
+          WebkitBackdropFilter: "var(--glass-filter)",
           border: "1px solid var(--surface-border)",
           borderRadius: "0.5rem",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+          boxShadow: "var(--shadow)",
           display: "flex",
           flexDirection: "column",
           zIndex: 1000,
@@ -177,7 +178,7 @@ export default function NotificationBell() {
                   style={{ 
                     padding: "1rem", 
                     borderBottom: "1px solid var(--surface-hover)",
-                    background: n.read ? "transparent" : "rgba(59, 130, 246, 0.1)",
+                    background: n.read ? "transparent" : "var(--accent-soft)",
                     cursor: n.read ? "default" : "pointer",
                     transition: "background 0.2s"
                   }}

@@ -336,7 +336,7 @@ export default function ManageContent() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                      {c.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', borderRadius: '1rem' }}>{c.targetDepartment}</span>}
+                      {c.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'var(--accent-soft)', color: 'var(--info)', borderRadius: '1rem' }}>{c.targetDepartment}</span>}
                       {c.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', borderRadius: '1rem' }}>Batch {c.targetBatch}</span>}
                     </div>
                   </div>
