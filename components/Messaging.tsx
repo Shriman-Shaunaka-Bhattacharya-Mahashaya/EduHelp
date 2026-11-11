@@ -118,7 +118,7 @@ export default function Messaging() {
                   padding: '1rem', 
                   borderBottom: '1px solid var(--surface-border)',
                   cursor: 'pointer',
-                  background: selectedContact?._id === c._id ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                  background: selectedContact?._id === c._id ? 'var(--accent-soft)' : 'transparent',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center'

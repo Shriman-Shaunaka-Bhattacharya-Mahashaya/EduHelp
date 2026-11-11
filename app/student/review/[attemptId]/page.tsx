@@ -129,11 +129,11 @@ export default function StudentReviewPage() {
                       if (optIdx === q.correctOptionIndex) {
                         bgColor = 'rgba(16, 185, 129, 0.1)';
                         borderColor = 'var(--success)';
-                        textColor = '#fff';
+                        textColor = 'var(--text-primary)';
                       } else if (optIdx === selectedIdx && !isCorrect) {
                         bgColor = 'rgba(239, 68, 68, 0.1)';
                         borderColor = 'var(--danger)';
-                        textColor = '#fff';
+                        textColor = 'var(--text-primary)';
                       }
 
                       return (
@@ -184,7 +184,7 @@ export default function StudentReviewPage() {
                   alignItems: 'center', 
                   padding: '0.75rem', 
                   borderRadius: '0.5rem',
-                  background: isCurrentUser ? 'rgba(79, 70, 229, 0.15)' : 'transparent',
+                  background: isCurrentUser ? 'var(--accent-soft)' : 'transparent',
                   border: isCurrentUser ? '1px solid var(--primary)' : '1px solid transparent'
                 }}>
                   <div style={{ width: '2rem', fontWeight: 700, color: idx < 3 ? 'var(--primary)' : 'var(--text-secondary)' }}>

@@ -1,4 +1,5 @@
 "use client";
+import ViewportOverlay from './ViewportOverlay';
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -249,6 +250,7 @@ export default function ExamList() {
 
       {/* Edit Modal */}
       {editingExam && (
+        <ViewportOverlay>
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div className="glass-panel" style={{ width: '90%', maxWidth: '600px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Edit Exam Settings</h2>
@@ -311,6 +313,7 @@ export default function ExamList() {
             </form>
           </div>
         </div>
+        </ViewportOverlay>
       )}
     </div>
   );

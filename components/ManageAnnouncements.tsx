@@ -289,7 +289,7 @@ export default function ManageAnnouncements() {
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(ann.createdAt).toLocaleString()}</span>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                      {ann.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', borderRadius: '1rem' }}>{ann.targetDepartment}</span>}
+                      {ann.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'var(--accent-soft)', color: 'var(--info)', borderRadius: '1rem' }}>{ann.targetDepartment}</span>}
                       {ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', borderRadius: '1rem' }}>Batch {ann.targetBatch}</span>}
                       {!ann.targetDepartment && !ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'var(--surface-border)', color: 'var(--text-secondary)', borderRadius: '1rem' }}>General</span>}
                     </div>

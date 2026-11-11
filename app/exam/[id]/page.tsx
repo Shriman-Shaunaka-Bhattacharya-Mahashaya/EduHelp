@@ -413,8 +413,8 @@ export default function ExamPage() {
                   padding: '1rem 1.5rem',
                   borderRadius: '0.5rem',
                   border: isSelected ? '2px solid var(--primary)' : '1px solid var(--surface-border)',
-                  background: isSelected ? 'rgba(79, 70, 229, 0.1)' : 'var(--surface-muted)',
-                  color: isSelected ? '#fff' : 'var(--text-secondary)',
+                  background: isSelected ? 'var(--accent-soft)' : 'var(--surface-muted)',
+                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
                   transition: 'background-color 140ms ease',
                   fontSize: '1rem'
                 }}

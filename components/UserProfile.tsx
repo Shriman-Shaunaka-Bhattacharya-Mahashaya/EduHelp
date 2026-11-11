@@ -54,13 +54,13 @@ export default function UserProfile() {
           width: '100px',
           height: '100px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%)',
+          background: 'var(--primary-solid)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '2.5rem',
           fontWeight: 'bold',
-          color: 'var(--text-primary)',
+          color: 'var(--stone-50)',
           marginBottom: '1.5rem',
           boxShadow: '0 8px 16px var(--surface-muted)'
         }}>
@@ -76,7 +76,7 @@ export default function UserProfile() {
         </p>
 
         <span style={{ 
-          background: profile.role === 'instructor' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
+          background: profile.role === 'instructor' ? 'rgba(245, 158, 11, 0.2)' : 'var(--accent-soft)',
           color: profile.role === 'instructor' ? 'var(--warning)' : 'var(--info)',
           padding: '0.25rem 1rem', 
           borderRadius: '2rem', 

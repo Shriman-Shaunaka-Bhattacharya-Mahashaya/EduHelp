@@ -4,16 +4,16 @@
 .intro h2 { font-size: clamp(2.5rem, 4.2vw, 3.8rem); line-height: 1.12; font-weight: 600; letter-spacing: -.04em; }
 .intro > p { font-size: 1.05rem; color: var(--text-secondary); max-width: 35ch; margin-top: 1.5rem; }
 .subjects { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: 1.5rem; font-size: .8rem; color: var(--primary); }
-.notebook { position: relative; margin-top: 3rem; max-width: 390px; padding: 1.75rem 2rem; border: 1px solid var(--surface-border); border-radius: .3rem 1.2rem 1.2rem .3rem; background: var(--surface); box-shadow: var(--shadow); transform: rotate(-3deg); }
+.notebook { position: relative; margin-top: 3rem; max-width: 390px; padding: 1.75rem 2rem; border: 1px solid var(--glass-border); border-radius: .3rem 1.2rem 1.2rem .3rem; background: var(--glass-muted); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--shadow); transform: rotate(-3deg); }
 .notebookTitle { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.3rem; }
 .notebookLine { height: 1px; margin-top: 1.5rem; background: var(--surface-border); }
 .notebookNote { margin-top: 1.4rem; font-size: .8rem; color: var(--primary); }
-.authCard { background: var(--surface); border: 1px solid var(--surface-border); border-radius: 1rem; box-shadow: var(--shadow); width: 100%; padding: clamp(1.5rem, 3vw, 2.5rem); display: flex; flex-direction: column; gap: 1.5rem; }
+.authCard { background: var(--glass-background); border: 1px solid var(--glass-border); border-radius: 1.25rem; -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--shadow); width: 100%; padding: clamp(1.5rem, 3vw, 2.5rem); display: flex; flex-direction: column; gap: 1.5rem; }
 .header { text-align: left; }
 .title { font-size: 1.8rem; font-weight: 650; margin-bottom: .5rem; color: var(--text-primary); }
 .subtitle { color: var(--text-secondary); font-size: .9rem; }
 .roleToggle { display: flex; background: var(--surface-muted); border-radius: .6rem; padding: .25rem; }
-.roleBtn { flex: 1; background: transparent; color: var(--text-secondary); font-size: .9rem; }
+.roleBtn { flex: 1; background: transparent; color: var(--text-secondary); font-size: .9rem; transition: transform 140ms var(--ease-out); }
 .roleBtn.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
 .form { display: flex; flex-direction: column; gap: 1.1rem; }
 .formGroup { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }

@@ -1,4 +1,5 @@
 "use client";
+import ViewportOverlay from './ViewportOverlay';
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
@@ -76,16 +77,19 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
   if (!isOpen) return null;
 
   return (
+    <ViewportOverlay>
     <div style={{
       position: 'fixed',
       bottom: '1rem',
       right: '1rem',
       width: 'min(400px, calc(100vw - 2rem))',
       height: 'min(600px, calc(100dvh - 2rem))',
-      background: 'var(--surface)',
+      background: 'var(--glass-background)',
+      backdropFilter: 'var(--glass-filter)',
+      WebkitBackdropFilter: 'var(--glass-filter)',
       border: '1px solid var(--surface-border)',
       borderRadius: '1rem',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+      boxShadow: 'var(--shadow)',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 1000,
@@ -152,5 +156,6 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
         </button>
       </div>
     </div>
+    </ViewportOverlay>
   );
 }

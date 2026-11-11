@@ -187,7 +187,7 @@ export default function StudentAssignments() {
                           Score: {sub.marksAwarded} {assign.maxMarks ? `/ ${assign.maxMarks}` : ''}
                         </div>
                       ) : (
-                        <div style={{ background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
+                        <div style={{ background: 'var(--accent-soft)', color: 'var(--info)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
                           Under Review
                         </div>
                       )}
