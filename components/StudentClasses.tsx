@@ -34,7 +34,7 @@ export default function StudentClasses() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <h2 style={{ fontSize: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Live Online Classes</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>View your upcoming scheduled classes. You can join the room once the instructor starts the class.</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>View your upcoming scheduled classes. You can open Google Meet once the instructor starts the class.</p>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>

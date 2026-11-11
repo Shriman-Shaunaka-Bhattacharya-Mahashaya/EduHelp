@@ -14,11 +14,6 @@
       "count": 1
     }
   },
-  "app/api/classes/[id]/route.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    }
-  },
   "app/api/cron/cleanup/route.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 2
@@ -195,11 +190,6 @@
       "count": 1
     }
   },
-  "app/class/[meetingId]/page.tsx": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 2
-    }
-  },
   "app/exam/[id]/page.tsx": {
     "@typescript-eslint/no-explicit-any": {
       "count": 7
@@ -268,9 +258,6 @@
     }
   },
   "components/ManageClasses.tsx": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 2
-    },
     "react-hooks/set-state-in-effect": {
       "count": 1
     }

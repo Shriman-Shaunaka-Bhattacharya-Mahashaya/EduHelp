@@ -1,144 +1,97 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState, useRef, useCallback } from "react";
-// Remove top-level import to fix SSR 'document is not defined' error
+import { useSession } from 'next-auth/react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { ThemeSwitcher } from '@/components/ThemeProvider';
+import { normalizeMeetUrl, type ClassStatus } from '@/lib/onlineClasses';
 
-export default function ClassMeetingRoom() {
-  const { data: session, status } = useSession();
-  const params = useParams<{ meetingId: string }>();
+interface ClassInfo {
+  title: string;
+  description: string;
+  status: ClassStatus;
+  meetingUrl: string;
+  canManage: boolean;
+}
+
+function ClassMeeting({ classId }: { classId: string }) {
+  const { status } = useSession();
   const router = useRouter();
-  
-  const [classId, setClassId] = useState<string | null>(null);
-  const [classTitle, setClassTitle] = useState<string>("Online Class");
-  const [zegoAppId, setZegoAppId] = useState<number | null>(null);
-  const [zegoToken, setZegoToken] = useState<string | null>(null);
-  const [zegoUserId, setZegoUserId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [onlineClass, setOnlineClass] = useState<ClassInfo | null>(null);
+  const [error, setError] = useState('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    async function resolveParams() {
-      const unwrappedParams = await params;
-      setClassId(unwrappedParams.meetingId);
-    }
-    resolveParams();
-  }, [params]);
-
-  useEffect(() => {
-    if (!classId || status !== "authenticated") return;
-
-    // Fetch the class to verify it exists and is ongoing (for students)
-    const verifyClass = async () => {
+    if (status === 'unauthenticated') router.replace('/login');
+    if (status !== 'authenticated') return;
+    const controller = new AbortController();
+    async function loadClass() {
       try {
-        const res = await fetch(`/api/classes/${classId}`);
-        const data = await res.json();
-        if (res.ok) {
-          setClassTitle(data.title || "Online Class");
-          if (!data.token || !data.appID || !data.userID) {
-            setError("The backend did not provide a secure ZegoCloud token.");
-          } else {
-            setZegoAppId(parseInt(data.appID));
-            setZegoToken(data.token);
-            setZegoUserId(data.userID);
-          }
-        } else {
-          setError(data.message || "Failed to load class");
-        }
-      } catch (e: any) {
-        setError(e.message);
+        const response = await fetch(`/api/classes/${classId}`, { signal: controller.signal, cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Unable to load this class');
+        const meetingUrl = normalizeMeetUrl(data.meetingUrl);
+        if (!meetingUrl) throw new Error('The instructor needs to add a valid Google Meet link');
+        setOnlineClass({ ...data, meetingUrl });
+      } catch (cause) {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Unable to load this class');
       }
-    };
+    }
+    void loadClass();
+    return () => controller.abort();
+  }, [classId, status, router]);
 
-    verifyClass();
-  }, [classId, status]);
-
-  const joinRoom = useCallback(async () => {
-    if (!classId || !session?.user || !containerRef.current) return;
-    if (!zegoToken || !zegoAppId || !zegoUserId) return;
-
+  async function updateStatus(nextStatus: 'ongoing' | 'completed') {
+    if (updating) return;
+    if (nextStatus === 'completed' && !window.confirm('Mark this class completed in EduHelp? End the video call separately in Google Meet.')) return;
+    setUpdating(true);
+    setError('');
     try {
-      // Dynamically import ZegoUIKitPrebuilt to prevent SSR errors
-      const { ZegoUIKitPrebuilt } = await import("@zegocloud/zego-uikit-prebuilt");
-
-      // Build the final kit token for production without exposing the server secret
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
-        zegoAppId,
-        zegoToken,
-        classId, // Room ID
-        zegoUserId, // User ID MATCHES EXACTLY
-        session.user.name || "Student" // User Name
-      );
-
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-      zp.joinRoom({
-        container: containerRef.current,
-        sharedLinks: [],
-        scenario: {
-          mode: ZegoUIKitPrebuilt.VideoConference,
-        },
-        onLeaveRoom: async () => {
-          if (session?.user?.role === 'instructor') {
-            const confirmEnd = window.confirm("Do you want to officially end this class for all students?");
-            if (confirmEnd) {
-              try {
-                await fetch(`/api/instructor/classes/${classId}`, {
-                  method: 'PUT',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ status: 'completed' })
-                });
-              } catch (e) {
-                console.error("Failed to end class", e);
-              }
-            }
-          }
-          router.push('/dashboard');
-        }
+      const response = await fetch(`/api/instructor/classes/${classId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: nextStatus }),
       });
-    } catch (e: any) {
-      console.error("Zego Initialization Error:", e);
-      setError("Failed to initialize video interface.");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Unable to update this class');
+      setOnlineClass(previous => previous ? { ...previous, status: nextStatus } : previous);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to update this class');
+    } finally {
+      setUpdating(false);
     }
-  }, [classId, session, router, zegoToken, zegoAppId, zegoUserId]);
-
-  // Trigger joinRoom when credentials are loaded and container is ready
-  useEffect(() => {
-    if (zegoToken && zegoAppId && zegoUserId && containerRef.current) {
-      joinRoom();
-    }
-  }, [zegoToken, zegoAppId, zegoUserId, joinRoom]);
-
-  if (error) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: 'var(--danger)' }}>
-        <h2>Error joining class</h2>
-        <p>{error}</p>
-        <button onClick={() => router.push('/dashboard')} className="btn-primary" style={{ marginTop: '1rem' }}>Return to Dashboard</button>
-      </div>
-    );
-  }
-
-  // Show loading state until token is fetched from backend
-  if (status === "loading" || !classId || !zegoToken || !zegoAppId || !zegoUserId) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: 'var(--text-primary)' }}>
-        <div className="spinner"></div>
-        <div style={{ marginTop: '1rem' }}>Preparing Secure Video Room...</div>
-      </div>
-    );
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }}></div>
-    </div>
+    <main id="main-content" className="meeting-shell">
+      <header className="meeting-page-header">
+        <Link href="/dashboard" className="brand"><span className="brand-mark" aria-hidden="true">e</span>EduHelp</Link>
+        <ThemeSwitcher />
+      </header>
+      <section className="glass-panel meeting-card" aria-labelledby="class-title">
+        {error && <p role="alert" className="class-error">{error}</p>}
+        {!onlineClass && !error && <div role="status" className="meeting-loading"><span className="spinner" aria-hidden="true" />Loading class details...</div>}
+        {onlineClass && <>
+          <span className="role-badge">{onlineClass.status === 'ongoing' ? 'Live now' : onlineClass.status === 'completed' ? 'Completed' : 'Scheduled'}</span>
+          <h1 id="class-title">{onlineClass.title}</h1>
+          <p className="meeting-description">{onlineClass.description}</p>
+          {onlineClass.status === 'ongoing' ? <>
+            <h2>Join on Google Meet</h2>
+            <p>The video call opens in a new tab. Your instructor may need to admit you to the meeting.</p>
+            <a className="btn-primary meeting-join" href={onlineClass.meetingUrl} target="_blank" rel="noopener noreferrer">Open Google Meet <span aria-hidden="true">&nearr;</span></a>
+          </> : <p>{onlineClass.status === 'completed' ? 'This class is completed.' : 'Start the class to make the meeting available to students.'}</p>}
+          {onlineClass.canManage && onlineClass.status !== 'completed' && <div className="meeting-host-actions">
+            {onlineClass.status === 'scheduled'
+              ? <button className="btn-primary" onClick={() => updateStatus('ongoing')} disabled={updating}>{updating ? 'Starting...' : 'Start Class'}</button>
+              : <><p>When the lesson ends, end the call in Google Meet and mark the class completed here.</p><button className="btn-outline" onClick={() => updateStatus('completed')} disabled={updating}>{updating ? 'Updating...' : 'Mark class completed'}</button></>}
+          </div>}
+        </>}
+        <Link href="/dashboard" className="meeting-back">Return to dashboard</Link>
+      </section>
+    </main>
   );
+}
+
+export default function ClassMeetingRoom() {
+  const { meetingId } = useParams<{ meetingId: string }>();
+  return <ClassMeeting key={meetingId} classId={meetingId} />;
 }
