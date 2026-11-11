@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import styles from "../auth.module.css";
+import AuthShell from "@/components/AuthShell";
 
 function LoginContent() {
   const router = useRouter();
@@ -47,50 +48,48 @@ function LoginContent() {
 
       router.push("/dashboard");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <div className={`glass-panel animate-fade-in ${styles.authCard}`}>
+    <AuthShell>
         <div className={styles.header}>
           <h1 className={styles.title}>Welcome Back</h1>
           <p className={styles.subtitle}>Sign in to your EduHelp account</p>
         </div>
 
         {successMsg && (
-          <div style={{ color: "var(--success)", background: "rgba(16, 185, 129, 0.1)", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid rgba(16, 185, 129, 0.2)", fontSize: "0.85rem" }}>
+          <div role="status" style={{ color: "var(--success)", background: "rgba(16, 185, 129, 0.1)", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid rgba(16, 185, 129, 0.2)", fontSize: "0.85rem" }}>
             {successMsg}
           </div>
         )}
         
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div role="alert" className={styles.error}>{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form} autoComplete="off">
+        <form onSubmit={handleSubmit} className={styles.form} autoComplete="on">
           <div className={styles.formGroup}>
-            <label className={styles.label}>Email</label>
-            <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="off" />
+            <label className={styles.label} htmlFor="email">Email</label>
+            <input type="email" id="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="on" />
           </div>
           
           <div className={styles.formGroup}>
-            <label className={styles.label}>Password</label>
-            <input type="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="new-password" />
+            <label className={styles.label} htmlFor="password">Password</label>
+            <input type="password" id="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" autoComplete="current-password" />
           </div>
 
-          <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={isLoading}>
-            {isLoading ? <div className="spinner"></div> : "Sign In"}
+          <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={isLoading} aria-busy={isLoading}>
+            {isLoading ? <>Signing in... <span className="spinner" aria-hidden="true" /></> : "Sign In"}
           </button>
         </form>
 
         <div className={styles.footer}>
-          Don't have an account? <Link href="/register" className={styles.link}>Sign up</Link>
+          Don&apos;t have an account? <Link href="/register" className={styles.link}>Sign up</Link>
         </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 

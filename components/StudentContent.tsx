@@ -91,7 +91,7 @@ export default function StudentContent() {
           placeholder="Search by title, course, or tags..." 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          style={{ width: '100%', maxWidth: '600px', padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid var(--primary)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '1rem', outline: 'none' }}
+          style={{ width: '100%', maxWidth: '600px', padding: '0.75rem 1rem', borderRadius: '2rem', border: '1px solid var(--primary)', background: 'var(--surface-muted)', color: 'var(--text-primary)', fontSize: '1rem' }}
         />
       </div>
 
@@ -103,14 +103,14 @@ export default function StudentContent() {
             {courses.length === 0 ? (
               <p style={{ color: 'var(--text-secondary)' }}>No courses are available for your department/batch yet.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '1.5rem' }}>
                 {courses.map((courseName) => (
                   <div 
                     key={courseName}
                     onClick={() => setSelectedCourse(courseName)}
                     style={{ 
                       padding: '2rem', 
-                      background: 'rgba(0,0,0,0.3)', 
+                      background: 'var(--surface-muted)',
                       border: '1px solid var(--primary)', 
                       borderRadius: '1rem', 
                       cursor: 'pointer',
@@ -158,7 +158,7 @@ export default function StudentContent() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {contents.map(c => (
-              <div key={c._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+              <div key={c._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{c.title}</h3>
@@ -167,14 +167,14 @@ export default function StudentContent() {
                     {c.tags && c.tags.length > 0 && (
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                         {c.tags.map((tag: string, i: number) => (
-                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '1rem' }}>#{tag}</span>
+                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'var(--surface-border)', borderRadius: '1rem' }}>#{tag}</span>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                   <ReactMarkdown>{c.description}</ReactMarkdown>
                 </div>
 

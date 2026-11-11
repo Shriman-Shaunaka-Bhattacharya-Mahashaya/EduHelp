@@ -117,7 +117,7 @@ export default function InstructorAnalyticsPage() {
                     {/* Progress Bar */}
                     <div style={{ display: 'flex', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem' }}>
                       <div style={{ width: `${correctPercent}%`, background: 'var(--success)' }}></div>
-                      <div style={{ width: `${incorrectPercent}%`, background: 'var(--danger)' }}></div>
+                      <div style={{ width: `${incorrectPercent}%`, background: '#b42338' }}></div>
                       <div style={{ width: `${unattemptedPercent}%`, background: 'var(--surface-border)' }}></div>
                     </div>
 
@@ -158,7 +158,7 @@ export default function InstructorAnalyticsPage() {
                   alignItems: 'center', 
                   padding: '0.75rem', 
                   borderRadius: '0.5rem',
-                  background: 'rgba(0,0,0,0.2)',
+                  background: 'var(--surface-muted)',
                   border: '1px solid var(--surface-border)'
                 }}>
                   <div style={{ width: '2rem', fontWeight: 700, color: idx < 3 ? 'var(--primary)' : 'var(--text-secondary)' }}>

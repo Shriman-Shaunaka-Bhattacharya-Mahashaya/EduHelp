@@ -52,7 +52,7 @@ export default function StudentClasses() {
               return (
                 <div key={c._id} style={{ 
                   padding: '1.5rem', 
-                  background: isOngoing ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0,0,0,0.2)', 
+                  background: isOngoing ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-muted)',
                   border: `1px solid ${isOngoing ? 'rgba(16, 185, 129, 0.3)' : 'var(--surface-border)'}`, 
                   borderRadius: '0.5rem', 
                   display: 'flex', 
@@ -62,8 +62,8 @@ export default function StudentClasses() {
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                       <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{c.title}</h3>
-                      {isOngoing && <span style={{ background: 'var(--danger)', color: '#fff', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 'bold', animation: 'pulse 2s infinite' }}>● LIVE NOW</span>}
-                      {isScheduled && isToday && <span style={{ background: 'var(--primary)', color: '#fff', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>TODAY</span>}
+                      {isOngoing && <span style={{ background: '#b42338', color: 'var(--text-primary)', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 'bold', animation: 'pulse 2s infinite' }}>● LIVE NOW</span>}
+                      {isScheduled && isToday && <span style={{ background: 'var(--primary-solid)', color: '#fff', padding: '0.1rem 0.5rem', borderRadius: '1rem', fontSize: '0.75rem' }}>TODAY</span>}
                     </div>
                     
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{c.description}</p>

@@ -127,7 +127,7 @@ export default function ManageClasses() {
         
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1.5rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Class Title *</label>
               <input type="text" className="input" required value={title} onChange={e => setTitle(e.target.value)} />
@@ -143,7 +143,7 @@ export default function ManageClasses() {
             <textarea className="input" rows={3} required value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '1.5rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Duration (Mins) *</label>
               <input type="number" min="15" className="input" required value={durationMinutes} onChange={e => setDurationMinutes(parseInt(e.target.value))} />
@@ -189,7 +189,7 @@ export default function ManageClasses() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {classes.map(c => (
-              <div key={c._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div key={c._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{c.title}</h3>
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{c.description}</p>

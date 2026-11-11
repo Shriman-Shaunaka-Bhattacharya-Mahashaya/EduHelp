@@ -1,5 +1,5 @@
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs' && !process.env.VERCEL) {
+  if (process.env.NEXT_RUNTIME === 'nodejs' && !process.env.VERCEL && process.env.DISABLE_INTERNAL_CRON !== 'true') {
     console.log('[Cron Engine] Starting internal Node.js polling for Docker environment');
     
     // Ping the reminders cron route every 60 seconds

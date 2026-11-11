@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     if (action === 'start') {
       // Check if scheduled and past window
       if (exam.type === 'scheduled') {
+        if (!exam.scheduledFor) return NextResponse.json({ message: 'Exam schedule is missing' }, { status: 400 });
         const now = new Date();
         const scheduledTime = new Date(exam.scheduledFor);
         const loginWindowEnd = new Date(scheduledTime.getTime() + 15 * 60000);

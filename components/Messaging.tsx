@@ -99,11 +99,11 @@ export default function Messaging() {
   if (loading) return <div className="spinner"></div>;
 
   return (
-    <div style={{ display: 'flex', height: '70vh', background: 'rgba(0,0,0,0.3)', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '70vh', background: 'var(--surface-muted)', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', overflow: 'hidden' }}>
       
       {/* Contacts Sidebar */}
       <div style={{ width: '30%', borderRight: '1px solid var(--surface-border)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-border)', background: 'rgba(255,255,255,0.05)' }}>
+        <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-border)', background: 'var(--surface-hover)' }}>
           <h3 style={{ margin: 0 }}>Messages</h3>
         </div>
         <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -116,7 +116,7 @@ export default function Messaging() {
                 onClick={() => setSelectedContact(c)}
                 style={{ 
                   padding: '1rem', 
-                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  borderBottom: '1px solid var(--surface-border)',
                   cursor: 'pointer',
                   background: selectedContact?._id === c._id ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
                   display: 'flex',
@@ -134,7 +134,7 @@ export default function Messaging() {
                 </div>
                 {c.unreadCount > 0 && (
                   <div style={{ 
-                    background: 'var(--danger)', 
+                    background: '#b42338',
                     color: 'white', 
                     borderRadius: '50%', 
                     padding: '0.2rem 0.5rem', 
@@ -155,7 +155,7 @@ export default function Messaging() {
       <div style={{ width: '70%', display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.1)' }}>
         {selectedContact ? (
           <>
-            <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-border)', background: 'rgba(255,255,255,0.05)' }}>
+            <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-border)', background: 'var(--surface-hover)' }}>
               <h3 style={{ margin: 0 }}>{selectedContact.fullName}</h3>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                 {selectedContact.department} • {selectedContact.role}
@@ -176,12 +176,12 @@ export default function Messaging() {
                       maxWidth: '70%'
                     }}>
                       <div style={{
-                        background: isMe ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                        background: isMe ? 'var(--primary-solid)' : 'var(--surface-border)',
                         padding: '0.75rem 1rem',
                         borderRadius: '1rem',
                         borderBottomRightRadius: isMe ? '0.25rem' : '1rem',
                         borderBottomLeftRadius: !isMe ? '0.25rem' : '1rem',
-                        color: 'white',
+                        color: isMe ? '#fff' : 'var(--text-primary)',
                         wordBreak: 'break-word'
                       }}>
                         {m.content}
@@ -196,7 +196,7 @@ export default function Messaging() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div style={{ padding: '1rem', borderTop: '1px solid var(--surface-border)', background: 'rgba(255,255,255,0.05)' }}>
+            <div style={{ padding: '1rem', borderTop: '1px solid var(--surface-border)', background: 'var(--surface-hover)' }}>
               <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '1rem' }}>
                 <input 
                   type="text" 
@@ -204,7 +204,7 @@ export default function Messaging() {
                   value={newMessage} 
                   onChange={e => setNewMessage(e.target.value)}
                   placeholder="Type a message..." 
-                  style={{ flex: 1, padding: '0.75rem', borderRadius: '2rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+                  style={{ flex: 1, padding: '0.75rem', borderRadius: '2rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}
                 />
                 <button type="submit" className="btn-primary" style={{ borderRadius: '2rem', padding: '0 1.5rem' }} disabled={!newMessage.trim()}>
                   Send

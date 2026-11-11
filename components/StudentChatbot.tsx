@@ -78,10 +78,10 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
   return (
     <div style={{
       position: 'fixed',
-      bottom: '2rem',
-      right: '2rem',
-      width: '400px',
-      height: '600px',
+      bottom: '1rem',
+      right: '1rem',
+      width: 'min(400px, calc(100vw - 2rem))',
+      height: 'min(600px, calc(100dvh - 2rem))',
       background: 'var(--surface)',
       border: '1px solid var(--surface-border)',
       borderRadius: '1rem',
@@ -94,7 +94,7 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
       {/* Header */}
       <div style={{
         padding: '1rem',
-        background: 'var(--primary)',
+        background: 'var(--primary-solid)',
         color: '#fff',
         display: 'flex',
         justifyContent: 'space-between',
@@ -106,7 +106,7 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
           {contentTitle && <div style={{ fontSize: '0.75rem', opacity: 0.8, fontWeight: 'normal' }}>Context: {contentTitle}</div>}
         </div>
         {onClose && (
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.25rem' }}>&times;</button>
+          <button aria-label="Close study assistant" onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.25rem' }}>&times;</button>
         )}
       </div>
 
@@ -116,12 +116,12 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
           <div key={i} style={{
             alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
             maxWidth: '85%',
-            background: m.role === 'user' ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+            background: m.role === 'user' ? 'var(--primary-solid)' : 'var(--surface-border)',
             padding: '0.75rem 1rem',
             borderRadius: '1rem',
             borderBottomRightRadius: m.role === 'user' ? '0' : '1rem',
             borderBottomLeftRadius: m.role === 'assistant' ? '0' : '1rem',
-            color: '#fff',
+            color: m.role === 'user' ? '#fff' : 'var(--text-primary)',
             fontSize: '0.9rem',
             lineHeight: '1.5'
           }}>
@@ -129,7 +129,7 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
           </div>
         ))}
         {loading && (
-          <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.1)', padding: '0.75rem 1rem', borderRadius: '1rem', borderBottomLeftRadius: '0' }}>
+          <div style={{ alignSelf: 'flex-start', background: 'var(--surface-border)', padding: '0.75rem 1rem', borderRadius: '1rem', borderBottomLeftRadius: '0' }}>
             <div className="spinner" style={{ width: '1rem', height: '1rem' }}></div>
           </div>
         )}
@@ -137,14 +137,15 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
       </div>
 
       {/* Input */}
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--surface-border)', display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.2)' }}>
+      <div style={{ padding: '1rem', borderTop: '1px solid var(--surface-border)', display: 'flex', gap: '0.5rem', background: 'var(--surface-muted)' }}>
         <input 
           type="text" 
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          aria-label="Question for study assistant"
           placeholder="Ask a question..."
-          style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }}
+          style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-border)', color: 'var(--text-primary)', outlineOffset: '3px' }}
         />
         <button onClick={handleSend} disabled={loading || !input.trim()} className="btn-primary" style={{ padding: '0 1rem', borderRadius: '0.5rem' }}>
           Send

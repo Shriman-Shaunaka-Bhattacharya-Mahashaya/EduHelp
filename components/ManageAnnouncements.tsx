@@ -177,7 +177,7 @@ export default function ManageAnnouncements() {
               onChange={e => setTitle(e.target.value)} 
               placeholder="E.g., Mid-Term Exam Rescheduled" 
               required 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -198,7 +198,7 @@ export default function ManageAnnouncements() {
               onChange={e => setMessage(e.target.value)} 
               placeholder="Type your announcement here, or upload a file to auto-fill..." 
               required 
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontFamily: 'monospace' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)', fontFamily: 'monospace' }}
             />
           </div>
 
@@ -209,7 +209,7 @@ export default function ManageAnnouncements() {
                 className="input" 
                 value={targetDepartment} 
                 onChange={e => setTargetDepartment(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}
               >
                 <option value="">All Departments (General)</option>
                 <option value="Computer Science">Computer Science</option>
@@ -226,14 +226,14 @@ export default function ManageAnnouncements() {
                 value={targetBatch} 
                 onChange={e => setTargetBatch(e.target.value)} 
                 placeholder="E.g., 2026" 
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
           
           <div>
             <label className="label">Auto-delete Date</label>
-            <input type="datetime-local" className="input" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+            <input type="datetime-local" className="input" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
           </div>
 
           <div>
@@ -241,7 +241,7 @@ export default function ManageAnnouncements() {
             <input 
               type="file" 
               onChange={e => setAttachment(e.target.files?.[0] || null)}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}
             />
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Students will be able to download this file securely via Cloudinary.</p>
           </div>
@@ -283,20 +283,20 @@ export default function ManageAnnouncements() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {announcements.map((ann: any) => (
-              <div key={ann._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+              <div key={ann._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{ann.title}</h3>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(ann.createdAt).toLocaleString()}</span>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                      {ann.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', borderRadius: '1rem' }}>{ann.targetDepartment}</span>}
-                      {ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', borderRadius: '1rem' }}>Batch {ann.targetBatch}</span>}
-                      {!ann.targetDepartment && !ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(255, 255, 255, 0.1)', color: '#ccc', borderRadius: '1rem' }}>General</span>}
+                      {ann.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', borderRadius: '1rem' }}>{ann.targetDepartment}</span>}
+                      {ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', borderRadius: '1rem' }}>Batch {ann.targetBatch}</span>}
+                      {!ann.targetDepartment && !ann.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'var(--surface-border)', color: 'var(--text-secondary)', borderRadius: '1rem' }}>General</span>}
                     </div>
                   </div>
                 </div>
                 
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                   <ReactMarkdown>{ann.message}</ReactMarkdown>
                 </div>
                 

@@ -1,5 +1,7 @@
 "use client";
 
+import DashboardNav from "./DashboardNav";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -74,6 +76,12 @@ export default function StudentDashboard() {
       }
     } catch (err: any) {
       console.error(err);
+      setError("We couldn't load your exams. Please refresh to try again.");
+    } finally {
+      if (status === 'available' && type === 'practice') setLoadingAvailPractice(false);
+      if (status === 'available' && type === 'scheduled') setLoadingAvailScheduled(false);
+      if (status === 'given' && type === 'practice') setLoadingGivenPractice(false);
+      if (status === 'given' && type === 'scheduled') setLoadingGivenScheduled(false);
     }
   };
 
@@ -185,14 +193,14 @@ export default function StudentDashboard() {
   };
 
   const renderCard = (exam: any, isGiven: boolean) => (
-    <div key={exam._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+    <div key={exam._id} className="exam-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', marginBottom: '1rem' }}>
       <div>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#fff' }}>{exam.courseName}</h3>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)' }}>{exam.courseName}</h3>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
           By {exam.instructor?.fullName} • {exam.durationMinutes || 60} mins • {exam.questions.length} Questions
         </p>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-          Type: <strong style={{ color: exam.type === 'scheduled' ? '#fbcfe8' : '#a7f3d0' }}>{exam.type.toUpperCase()}</strong>
+          Type: <strong style={{ color: exam.type === 'scheduled' ? 'var(--secondary)' : 'var(--success)' }}>{exam.type.toUpperCase()}</strong>
           {exam.type === 'scheduled' && exam.scheduledFor && ` (Scheduled: ${new Date(exam.scheduledFor).toLocaleString()})`}
         </p>
         <p style={{ fontSize: '0.85rem', color: 'var(--danger)', marginTop: '0.25rem' }}>
@@ -200,7 +208,7 @@ export default function StudentDashboard() {
         </p>
         {isGiven && exam.attempt && (
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Score: <strong style={{ color: '#fff' }}>{exam.attempt.score} / {exam.questions.length}</strong>
+            Score: <strong style={{ color: 'var(--text-primary)' }}>{exam.attempt.score} / {exam.questions.length}</strong>
           </p>
         )}
       </div>
@@ -227,130 +235,25 @@ export default function StudentDashboard() {
   );
 
   return (
-    <div className="glass-panel" style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '1rem' }}>
-        <button
-          onClick={() => setActiveTab("available")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "available" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "available" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Available Exams
-        </button>
-        <button
-          onClick={() => setActiveTab("given")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "given" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "given" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Exams Given
-        </button>
-        <button
-          onClick={() => setActiveTab("announcements")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "announcements" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "announcements" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Announcements
-        </button>
-        <button
-          onClick={() => setActiveTab("assignments")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "assignments" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "assignments" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Assignments
-        </button>
-        <button
-          onClick={() => setActiveTab("content")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "content" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "content" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Materials
-        </button>
-        <button
-          onClick={() => setActiveTab("classes")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "classes" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "classes" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Classes
-        </button>
-        <button
-          onClick={() => setActiveTab("messages")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "messages" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "messages" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem',
-            position: 'relative'
-          }}
-        >
-          Messages
-          {unreadMessages > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: '0',
-              right: '0',
-              background: 'var(--danger)',
-              color: 'white',
-              borderRadius: '50%',
-              padding: '0.1rem 0.4rem',
-              fontSize: '0.6rem',
-              fontWeight: 'bold',
-              transform: 'translate(25%, -25%)'
-            }}>
-              {unreadMessages}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("profile")}
-          style={{
-            background: 'transparent',
-            color: activeTab === "profile" ? 'var(--primary)' : 'var(--text-secondary)',
-            borderBottom: activeTab === "profile" ? '2px solid var(--primary)' : 'none',
-            borderRadius: 0,
-            padding: '0.5rem 1rem'
-          }}
-        >
-          Profile
-        </button>
-      </div>
+    <div className="workspace-panel">
+      <DashboardNav active={activeTab} onChange={setActiveTab} items={[
+        { id: "available", label: "Available Exams" },
+        { id: "given", label: "Given Exams" },
+        { id: "announcements", label: "Announcements" },
+        { id: "assignments", label: "Assignments" },
+        { id: "content", label: "Materials" },
+        { id: "classes", label: "Classes" },
+        { id: "messages", label: "Messages", count: unreadMessages },
+        { id: "profile", label: "Profile" },
+      ]} />
 
-      {error && <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '1rem' }}>{error}</div>}
+      {error && <div role="alert" style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)', marginBottom: '1rem' }}>{error}</div>}
 
-      <div className="animate-fade-in">
+      <div className="workspace-content">
         {activeTab === "available" && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Scheduled Exams</h2>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Scheduled Exams</h2>
               {loadingAvailScheduled && availScheduled.length === 0 ? <div className="spinner"></div> : availScheduled.map(e => renderCard(e, false))}
               {!loadingAvailScheduled && availScheduled.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>No available scheduled exams.</div>}
               {hasMoreAvailScheduled && (
@@ -363,7 +266,7 @@ export default function StudentDashboard() {
               )}
             </div>
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Practice Exams</h2>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Practice Exams</h2>
               {loadingAvailPractice && availPractice.length === 0 ? <div className="spinner"></div> : availPractice.map(e => renderCard(e, false))}
               {!loadingAvailPractice && availPractice.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>No available practice exams.</div>}
               {hasMoreAvailPractice && (
@@ -381,7 +284,7 @@ export default function StudentDashboard() {
         {activeTab === "given" && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Completed Scheduled Exams</h2>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Completed Scheduled Exams</h2>
               {loadingGivenScheduled && givenScheduled.length === 0 ? <div className="spinner"></div> : givenScheduled.map(e => renderCard(e, true))}
               {!loadingGivenScheduled && givenScheduled.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>You haven't completed any scheduled exams.</div>}
               {hasMoreGivenScheduled && (
@@ -394,7 +297,7 @@ export default function StudentDashboard() {
               )}
             </div>
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Completed Practice Exams</h2>
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Completed Practice Exams</h2>
               {loadingGivenPractice && givenPractice.length === 0 ? <div className="spinner"></div> : givenPractice.map(e => renderCard(e, true))}
               {!loadingGivenPractice && givenPractice.length === 0 && <div style={{ color: 'var(--text-secondary)' }}>You haven't completed any practice exams.</div>}
               {hasMoreGivenPractice && (
@@ -411,7 +314,7 @@ export default function StudentDashboard() {
 
         {activeTab === "announcements" && (
           <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>Official Announcements</h2>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>Official Announcements</h2>
             {loadingAnnouncements ? (
               <div className="spinner"></div>
             ) : announcements.length === 0 ? (
@@ -419,7 +322,7 @@ export default function StudentDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {announcements.map((ann: any) => (
-                  <div key={ann._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+                  <div key={ann._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                       <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{ann.title}</h3>
                       <div style={{ textAlign: 'right' }}>
@@ -428,7 +331,7 @@ export default function StudentDashboard() {
                       </div>
                     </div>
                     
-                    <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
+                    <div style={{ background: 'var(--surface-muted)', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1rem', lineHeight: '1.6' }}>
                       <ReactMarkdown>{ann.message}</ReactMarkdown>
                       <div style={{ color: 'var(--danger)', marginTop: '0.5rem' }}><strong>⏳ Auto-deletes on:</strong> {ann.expireAt ? new Date(ann.expireAt).toLocaleString() : "Never"}</div>
                     </div>
@@ -484,6 +387,8 @@ export default function StudentDashboard() {
 
       {/* Global Generic Chatbot */}
       <button 
+        aria-label="Open study assistant"
+        aria-expanded={globalChatOpen}
         onClick={() => setGlobalChatOpen(!globalChatOpen)}
         style={{
           position: 'fixed',
@@ -492,10 +397,10 @@ export default function StudentDashboard() {
           width: '60px',
           height: '60px',
           borderRadius: '50%',
-          background: 'var(--primary)',
+          background: 'var(--primary-solid)',
           color: '#fff',
           border: 'none',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          boxShadow: '0 4px 15px var(--surface-muted)',
           cursor: 'pointer',
           fontSize: '1.5rem',
           display: 'flex',
@@ -504,7 +409,7 @@ export default function StudentDashboard() {
           zIndex: 999
         }}
       >
-        💬
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5a9.5 9.5 0 0 1 19 0Z"/><path d="M7 9h10M7 13h7"/></svg>
       </button>
 
       <StudentChatbot 
