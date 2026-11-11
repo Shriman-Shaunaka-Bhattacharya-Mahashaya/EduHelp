@@ -56,8 +56,11 @@ jobs:
           cache: npm
       - run: npm ci
         timeout-minutes: 5
-      - name: Verify preinstalled browsers
+      - name: Verify browser launches
         timeout-minutes: 1
+        env:
+          # GitHub mounts /github/home with a different owner; Firefox rejects it as root.
+          HOME: /root
         run: |
           node --input-type=module <<'NODE'
           import { chromium, firefox, webkit } from '@playwright/test';
@@ -66,12 +69,17 @@ jobs:
             const executable = browser.executablePath();
             if (!existsSync(executable)) throw new Error(`Missing ${browser.name()} executable: ${executable}. Match the CI container image to the locked Playwright version.`);
             console.log(`${browser.name()}: ${executable}`);
+            const instance = await browser.launch({ headless: true, timeout: 15000 });
+            await instance.close();
+            console.log(`${browser.name()}: launch passed`);
           }
           NODE
       - run: npm run build
         timeout-minutes: 8
       - run: npm run test:e2e
         timeout-minutes: 10
+        env:
+          HOME: /root
       - uses: actions/upload-artifact@v4
         if: always()
         with:
