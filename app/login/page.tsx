@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -23,6 +23,26 @@ function LoginContent() {
     email: "",
     password: "",
   });
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const clearCredentials = useCallback(() => {
+    setFormData({ email: "", password: "" });
+    // Also clear values restored directly by the browser, outside React state.
+    formRef.current?.querySelectorAll<HTMLInputElement>("input").forEach(input => {
+      input.value = "";
+    });
+  }, []);
+
+  useEffect(() => {
+    // Clear browser-restored values on mount and when returning via Back/Forward.
+    formRef.current?.reset();
+    window.addEventListener("pageshow", clearCredentials);
+    window.addEventListener("pagehide", clearCredentials);
+    return () => {
+      window.removeEventListener("pageshow", clearCredentials);
+      window.removeEventListener("pagehide", clearCredentials);
+    };
+  }, [clearCredentials]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,6 +70,7 @@ function LoginContent() {
     } catch (err: any) {
       setError(err.message);
     } finally {
+      clearCredentials();
       setIsLoading(false);
     }
   };
@@ -70,7 +91,7 @@ function LoginContent() {
         
         {error && <div className={styles.error}>{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form} autoComplete="off">
+        <form ref={formRef} onSubmit={handleSubmit} className={styles.form} autoComplete="off">
           <div className={styles.formGroup}>
             <label className={styles.label}>Email</label>
             <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" autoComplete="off" />
