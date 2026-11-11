@@ -60,7 +60,7 @@ export default function UserProfile() {
           justifyContent: 'center',
           fontSize: '2.5rem',
           fontWeight: 'bold',
-          color: 'var(--stone-50)',
+          color: 'var(--cyan-50)',
           marginBottom: '1.5rem',
           boxShadow: '0 8px 16px var(--surface-muted)'
         }}>

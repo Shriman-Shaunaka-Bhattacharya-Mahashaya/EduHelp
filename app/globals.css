@@ -1,93 +1,95 @@
-/* The supplied olive/stone scale is shared by both color themes. */
+/* The supplied cyan scale is shared by both color themes. */
 :root {
-  --stone-50: #fbfbf9;
-  --stone-100: #f4f4f0;
-  --stone-200: #e8e8e3;
-  --stone-300: #d8d8d0;
-  --stone-400: #abab9c;
-  --stone-500: #7c7c67;
-  --stone-600: #5b5b4b;
-  --stone-700: #474739;
-  --stone-800: #2b2b22;
-  --stone-900: #1d1d16;
-  --stone-950: #0c0c09;
+  --cyan-50: #ecfeff;
+  --cyan-100: #cefafe;
+  --cyan-200: #a2f4fd;
+  --cyan-300: #53eafd;
+  --cyan-400: #00d3f3;
+  --cyan-500: #00b8db;
+  --cyan-600: #0092b8;
+  --cyan-700: #007595;
+  --cyan-800: #005f78;
+  --cyan-900: #104e64;
+  --cyan-950: #053345;
   --glass-filter: blur(20px) saturate(115%);
 }
+/* Darker cyan shades keep text and buttons readable on pale glass. */
 :root, [data-theme="light"] {
   color-scheme: light;
-  --primary: var(--stone-700);
-  --primary-hover: var(--stone-800);
-  --primary-solid: var(--stone-700);
-  --primary-solid-hover: var(--stone-800);
-  --secondary: var(--stone-600);
-  --background: var(--stone-100);
-  --background-deep: var(--stone-200);
-  --surface: var(--stone-50);
-  --surface-muted: var(--stone-200);
-  --surface-hover: var(--stone-300);
-  --surface-border: rgba(91, 91, 75, .24);
-  --control-border: var(--stone-500);
-  --text-primary: var(--stone-900);
-  --text-secondary: var(--stone-600);
+  --primary: var(--cyan-700);
+  --primary-hover: var(--cyan-900);
+  --primary-solid: var(--cyan-800);
+  --primary-solid-hover: var(--cyan-900);
+  --secondary: var(--cyan-800);
+  --background: var(--cyan-50);
+  --background-deep: var(--cyan-100);
+  --surface: var(--cyan-50);
+  --surface-muted: var(--cyan-100);
+  --surface-hover: var(--cyan-200);
+  --surface-border: rgba(0, 117, 149, .24);
+  --control-border: var(--cyan-600);
+  --text-primary: var(--cyan-950);
+  --text-secondary: var(--cyan-800);
   --danger: #b42338;
   --success: #14734f;
   --warning: #916000;
-  --info: var(--stone-700);
-  --accent-soft: rgba(171, 171, 156, .23);
-  --glass-background: rgba(251, 251, 249, .68);
-  --glass-muted: rgba(244, 244, 240, .52);
-  --glass-border: rgba(251, 251, 249, .9);
-  --glass-highlight: rgba(251, 251, 249, .92);
-  --input-background: rgba(251, 251, 249, .78);
-  --ambient-olive: rgba(124, 124, 103, .24);
-  --ambient-light: rgba(251, 251, 249, .96);
-  --shadow: 0 16px 44px rgba(43, 43, 34, .09), inset 0 1px 0 var(--glass-highlight);
-  --overlay: rgba(12, 12, 9, .65);
+  --info: var(--cyan-700);
+  --accent-soft: rgba(83, 234, 253, .22);
+  --glass-background: rgba(236, 254, 255, .72);
+  --glass-muted: rgba(206, 250, 254, .48);
+  --glass-border: rgba(236, 254, 255, .92);
+  --glass-highlight: rgba(236, 254, 255, .94);
+  --input-background: rgba(236, 254, 255, .82);
+  --ambient-cyan: rgba(0, 184, 219, .17);
+  --ambient-light: rgba(236, 254, 255, .96);
+  --shadow: 0 16px 44px rgba(5, 51, 69, .1), inset 0 1px 0 var(--glass-highlight);
+  --overlay: rgba(5, 51, 69, .72);
   --ease-out: cubic-bezier(.23, 1, .32, 1);
 }
 [data-theme="dark"] {
   color-scheme: dark;
-  --primary: var(--stone-300);
-  --primary-hover: var(--stone-100);
-  --primary-solid: var(--stone-600);
-  --primary-solid-hover: var(--stone-700);
-  --secondary: var(--stone-400);
-  --background: var(--stone-950);
-  --background-deep: var(--stone-900);
-  --surface: var(--stone-900);
-  --surface-muted: var(--stone-800);
-  --surface-hover: var(--stone-700);
-  --surface-border: rgba(171, 171, 156, .25);
-  --control-border: var(--stone-500);
-  --text-primary: var(--stone-100);
-  --text-secondary: var(--stone-400);
+  --primary: var(--cyan-300);
+  --primary-hover: var(--cyan-100);
+  --primary-solid: var(--cyan-800);
+  --primary-solid-hover: var(--cyan-700);
+  --secondary: var(--cyan-200);
+  --background: var(--cyan-950);
+  --background-deep: var(--cyan-900);
+  --surface: var(--cyan-950);
+  --surface-muted: var(--cyan-900);
+  --surface-hover: var(--cyan-800);
+  --surface-border: rgba(162, 244, 253, .25);
+  --control-border: var(--cyan-500);
+  --text-primary: var(--cyan-50);
+  --text-secondary: var(--cyan-200);
   --danger: #ff9ca9;
   --success: #79d8b3;
   --warning: #f4ce7a;
-  --info: var(--stone-300);
-  --accent-soft: rgba(171, 171, 156, .14);
-  --glass-background: rgba(29, 29, 22, .72);
-  --glass-muted: rgba(43, 43, 34, .52);
-  --glass-border: rgba(216, 216, 208, .16);
-  --glass-highlight: rgba(244, 244, 240, .1);
-  --input-background: rgba(12, 12, 9, .55);
-  --ambient-olive: rgba(124, 124, 103, .25);
-  --ambient-light: rgba(71, 71, 57, .3);
-  --shadow: 0 18px 48px rgba(12, 12, 9, .38), inset 0 1px 0 var(--glass-highlight);
+  --info: var(--cyan-300);
+  --accent-soft: rgba(0, 211, 243, .15);
+  --glass-background: rgba(5, 51, 69, .76);
+  --glass-muted: rgba(16, 78, 100, .56);
+  --glass-border: rgba(162, 244, 253, .2);
+  --glass-highlight: rgba(162, 244, 253, .14);
+  --input-background: rgba(5, 51, 69, .82);
+  --ambient-cyan: rgba(0, 184, 219, .17);
+  --ambient-light: rgba(0, 117, 149, .24);
+  --shadow: 0 18px 48px rgba(5, 51, 69, .44), inset 0 1px 0 var(--glass-highlight);
 }
+
 * { box-sizing: border-box; padding: 0; margin: 0; }
 html { scrollbar-color: var(--surface-border) var(--background); scroll-padding-top: 1rem; }
 body {
   font-family: var(--font-geist-sans), sans-serif;
   background-color: var(--background);
-  background-image: radial-gradient(ellipse at 8% 18%, var(--ambient-olive), transparent 52%), radial-gradient(ellipse at 85% 12%, var(--ambient-light), transparent 48%), radial-gradient(ellipse at 80% 90%, var(--ambient-olive), transparent 55%), linear-gradient(145deg, var(--background), var(--background-deep));
+  background-image: radial-gradient(ellipse at 8% 18%, var(--ambient-cyan), transparent 52%), radial-gradient(ellipse at 85% 12%, var(--ambient-light), transparent 48%), radial-gradient(ellipse at 80% 90%, var(--ambient-cyan), transparent 55%), linear-gradient(145deg, var(--background), var(--background-deep));
   background-attachment: scroll;
   color: var(--text-primary); min-height: 100vh; line-height: 1.55; -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; text-decoration: none; text-underline-offset: .2em; }
 h1, h2, h3 { line-height: 1.25; letter-spacing: -.025em; text-wrap: balance; }
 ::selection { background: var(--accent-soft); color: var(--primary); }
-input, select, textarea { font: inherit; width: 100%; min-width: 0; padding: .75rem 1rem; border-radius: .6rem; background: var(--input-background); border: 1px solid var(--control-border); color: var(--text-primary); caret-color: var(--primary); box-shadow: inset 0 1px 2px rgba(12, 12, 9, .04); }
+input, select, textarea { font: inherit; width: 100%; min-width: 0; padding: .75rem 1rem; border-radius: .6rem; background: var(--input-background); border: 1px solid var(--control-border); color: var(--text-primary); caret-color: var(--primary); box-shadow: inset 0 1px 2px rgba(5, 51, 69, .04); }
 select option { background: var(--surface); color: var(--text-primary); }
 input::placeholder, textarea::placeholder { color: var(--text-secondary); opacity: 1; }
 input[type="checkbox"], input[type="radio"] { width: auto; accent-color: var(--primary-solid); }
@@ -96,7 +98,7 @@ button { font: inherit; cursor: pointer; border: 1px solid transparent; padding:
 button:active:not(:disabled) { transform: scale(.98); }
 button:disabled { cursor: not-allowed; opacity: .55; }
 :where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
-.btn-primary { background: linear-gradient(rgba(251, 251, 249, .06), transparent), var(--primary-solid); color: var(--stone-50); border-color: rgba(251, 251, 249, .12); box-shadow: 0 3px 10px rgba(12, 12, 9, .12), inset 0 1px 0 rgba(251, 251, 249, .1); }
+.btn-primary { background: linear-gradient(rgba(236, 254, 255, .06), transparent), var(--primary-solid); color: var(--cyan-50); border-color: rgba(236, 254, 255, .12); box-shadow: 0 3px 10px rgba(5, 51, 69, .12), inset 0 1px 0 rgba(236, 254, 255, .1); }
 .btn-outline { background: var(--glass-muted); border: 1px solid var(--surface-border); color: var(--text-primary); }
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:hover:not(:disabled) { background-color: var(--primary-solid-hover); }
