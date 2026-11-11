@@ -1,225 +1,406 @@
 # EduHelp LMS
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge)](https://edu-help-iota.vercel.app)
+A learning management system for instructors and students, built with Next.js, React, and MongoDB. EduHelp brings exams, assignments, learning materials, document assistance, messaging, and Google Meet classes into one workspace.
 
-A comprehensive, role-based Learning Management System (LMS) built with Next.js 16, React, and MongoDB. EduHelp goes far beyond standard exam portals by integrating an intelligent AI-driven RAG chatbot, global semantic vector search for educational materials, rich-text assignment grading, direct real-time messaging, and a strictly proctored anti-cheat examination environment into a single, cohesive academic workspace.
+[Live application](https://edu-help-iota.vercel.app) | [Design guide](DESIGN.md) | [Testing guide](TESTING.md)
 
-## Advanced Features
+## Table of contents
 
-### 1. Intelligent AI Exam Parsing (Groq)
-Instructors no longer need to worry about formatting. You can upload raw, messy `.txt`, `.pdf`, `.docx`, `.pptx`, or `.xlsx` files, and our secure backend leverages the **Groq AI API (llama-3.1-8b-instant)** to instantly read, understand, and extract questions, options, and correct answers into structured database records perfectly.
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Technology stack](#technology-stack)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Environment configuration](#environment-configuration)
+- [Atlas Vector Search setup](#atlas-vector-search-setup)
+- [User manual](#user-manual)
+  - [Accounts and navigation](#accounts-and-navigation)
+  - [Instructor guide](#instructor-guide)
+  - [Student guide](#student-guide)
+  - [Online classes with Google Meet](#online-classes-with-google-meet)
+- [Development and testing](#development-and-testing)
+- [Deployment](#deployment)
+- [Scheduled jobs and data lifecycle](#scheduled-jobs-and-data-lifecycle)
+- [Troubleshooting](#troubleshooting)
+- [Documentation and references](#documentation-and-references)
 
-### 2. High-Performance Scalability
-The system is built to handle thousands of exams and attempts simultaneously. Dashboards utilize strict **Database-Level Pagination** (MongoDB `.skip()` and `.limit()`) and infinite-scroll "Load More" mechanics across all core content streams (Materials, Announcements, Assignments) to ensure the server never hits memory payload limits, regardless of scale.
+## Overview
 
-### 3. Strict Proctoring & Anti-Cheating
-The exam-taking environment (`app/exam/[id]/page.tsx`) enforces total lockdown:
-- **Absolute Time Strategy:** The timer tracks the real-world system clock. If a student tries to hack the system by pausing the browser via Developer Tools, the clock instantly catches up the moment they unpause.
-- **Physical Lockdown:** Text selection, copying, cutting, pasting, and right-clicking are fully disabled. Keyboard shortcuts like `Ctrl+C`, `Ctrl+V`, `Ctrl+P`, and `Ctrl+S` are actively intercepted and blocked.
-- **3-Strike Penalty System:** The system monitors tab visibility and window state. Students are forced to enter **Full Screen Mode** to take the exam. If a student switches tabs or escapes full screen, they receive a massive warning overlay and are forced to re-enter full screen. Strikes are persistently cached to `localStorage` (defeating page refreshes). On the 3rd strike, the exam is forcibly locked and auto-submitted.
+EduHelp provides two role-based dashboards:
 
-### 4. Comprehensive Assignments & Grading
-- Instructors can create rich-text assignments targeted at specific departments and batches, optionally attach resources, and set strict deadlines and max marks.
-- Students can upload submission documents, with the system blocking late submissions.
-- Instructors get a unified dashboard to download submissions, enter grades, and leave feedback. 
+| Role | Main tasks |
+| --- | --- |
+| Instructor | Create exams, review results, publish announcements and materials, grade assignments, schedule classes, and message students. |
+| Student | Take assigned exams, review attempts, submit assignments, browse materials, use document assistance, join classes, and message instructors. |
 
-### 5. Cloud-Native Storage & Announcements
-- Integrated with **Cloudinary** for lightning-fast file hosting.
-- Instructors can blast targeted announcements (with attachments) to specific cohorts of students.
-- Strict cloud management ensures that deleting an assignment or un-submitting a file permanently wipes the physical data from Cloudinary to prevent ghost-storage bloat.
+Start with [Getting started](#getting-started) to run the project, or jump to the [User manual](#user-manual) to use an existing deployment.
 
-### 6. Automatic Notification Reminder System
-- **Hybrid Cron Engine:** A highly sophisticated unified cron engine operates flawlessly across both Serverless and local Docker environments (via Next.js `instrumentation.ts` background looping) automatically.
-- *(Note: Since Vercel Hobby accounts limit crons to once per day, production deployment uses a free external ping service like UptimeRobot to trigger the `/api/cron/reminders` endpoint every minute).*
-- Students receive automated in-app alerts precisely **1 Day**, **2 Hours**, and **5 Minutes** before their Scheduled Exam or Assignment deadline.
-- Intelligent target filtering: only pings students who have not yet submitted their assignments or attempted their exams.
-- In-app Notification Bell in the dashboard dynamically updates and allows clearing of read messages.
+## Features
 
-### 7. Direct Messaging System
-- Seamless, real-time-like communication between students and instructors.
-- Built-in notification badges and unread message tracking.
-- Automatic privacy and database optimization via **6-month TTL auto-deletion** for old messages.
+| Area | Capabilities |
+| --- | --- |
+| Exams | Practice and scheduled tests, AI-assisted question extraction from uploaded documents, server-side scoring, attempt review, and instructor analytics. |
+| Exam safeguards | Fullscreen prompts, tab/window monitoring, strike tracking, copy/paste restrictions, and time tracking. These browser controls do not guarantee prevention of cheating. |
+| Offline exam recovery | Locally cached answers and a pending-submission retry when connectivity returns. See [testing boundaries](TESTING.md#honest-coverage-boundaries) for recovery scenarios that still need isolated integration testing. |
+| Assignments | Cohort targeting, deadlines, file submissions, grades, and instructor feedback. |
+| Materials | Course folders, document and video uploads, embedded video playback, and semantic search. |
+| Document assistance | Text extraction, OCR fallback for images/scanned PDFs, vector retrieval, and a Groq-backed conversational assistant. Generated answers should be checked against the source material. |
+| Announcements | Department/batch targeting and optional attachments. |
+| Classes | Instructor-provided Google Meet links, scheduled/live/completed states, and audience checks before students receive a live link. |
+| Communication | Direct messages, unread counts, and in-app notifications. |
+| Interface | Responsive cyan glassmorphism, light/dark/system themes, persistent preferences, and keyboard focus styles. |
+| Data management | Paginated content lists, retention indexes, and cleanup endpoints for expired records and related assets. |
 
-### 8. Educational Materials & Semantic Vector Search
-- **Course-Based Organization**: Materials are structurally grouped into dynamic Course Folders. The system auto-aggregates a distinct list of subjects for students and instructors, keeping the workspace completely clutter-free.
-- Instructors can upload required reading materials, study guides, syllabus documents, and **Video Lectures** (MP4, WebM, OGG) natively to the portal.
-- Video materials are securely hosted, optimized for rapid streaming, and rendered in sleek native HTML5 embedded players directly inside the dashboard.
-- **Smart OCR Fallback**: Supports raw `.jpg`/`.png` uploads and automatically detects scanned PDFs lacking machine-readable text. It seamlessly triggers a local **Tesseract.js** OCR pipeline to extract text from images before pushing to the vector database.
-- **Global Semantic Vector Search**: The student search bar is powered by a RAG-like vector space. When instructors upload content, its metadata (title, course, tags, description) is converted into a mathematical vector. When students search, their query is embedded in real-time, retrieving the most semantically relevant materials instantly, even if they don't type the exact keyword.
+## Architecture
 
-### 9. RAG AI Assistant (Retrieval-Augmented Generation)
-- **Local Embedded Vectors:** Uploaded materials are dynamically parsed and converted into 384-dimensional mathematical vectors natively inside the Node.js V8 engine using `@xenova/transformers` (Zero latency, zero external API costs).
-- **Atlas Vector Search:** Vectors are stored in MongoDB and searched at lightning speed utilizing Lucene-based `$vectorSearch` with strict multi-tenant metadata filtering.
-- **Groq LLM Integration:** Students can launch a dedicated AI Chatbot for any document. The system instantly queries the vector database for the most relevant context and injects it into a high-speed Llama 3/Mixtral model via the Groq API, guaranteeing hallucination-free, strictly contextual answers.
-- **Conversational Memory:** The chatbot retains a rolling window of conversational history, enabling fluid follow-up questions.
+EduHelp is a single Next.js application. The App Router serves the interface and API routes; server-side handlers access MongoDB and external integrations.
 
-### 10. Automated Garbage Collection
-- Built-in data lifecycle management. Exams, Announcements, Assignments, Content, and **Online Classes** are assigned a 6-month Time-To-Live (TTL) by default.
-- Once the expiration date passes, items instantly vanish from user interfaces (Soft Delete).
-- A secure Vercel Cron Job runs every midnight to physically delete expired documents, permanently destroy associated Cloudinary assets, and explicitly wipe orphaned Vector Embeddings from the `$vectorSearch` index to prevent data bloat.
+```mermaid
+flowchart TD
+    Browser[Student or instructor browser] --> App[Next.js pages and React components]
+    App --> API[Next.js API routes]
+    API --> Auth[NextAuth session and role checks]
+    API --> DB[(MongoDB / Mongoose)]
+    API --> Files[Cloudinary file storage]
+    API --> Parser[Document extraction and OCR]
+    Parser --> Embeddings[Local transformer embeddings]
+    Embeddings --> DB
+    API --> Search[Atlas Vector Search]
+    Search --> DB
+    API --> LLM[Groq API]
+    Browser --> Meet[Google Meet in a separate tab]
+    Scheduler[Internal timer or external scheduler] --> Jobs[Cron API routes]
+    Jobs --> DB
+    Jobs --> Files
+```
 
-### 11. Offline Resilience
-If a student's internet drops while taking an exam, their answers and time spent are constantly cached to `localStorage`. If they submit while offline, the system safely stores the payload and uses an active **Background Ghost Sync** to automatically silently submit the exam to the server the second their internet connection is restored (`window.addEventListener('online')`).
+### Main application flows
 
-## Role-Based Access Control
-- **Instructor Dashboard**: 
-  - Manage Practice Tests, Scheduled Tests, Announcements, Assignments, and Educational Materials.
-  - View real-time analytics, student leaderboards, and detailed question breakdowns.
-  - Full CRUD control with cloud-storage syncing.
-- **Student Dashboard**: 
-  - Segregated tabs for Available Exams, Given Exams, targeted Announcements, Assignments, and Materials.
-  - Interactive **AI Chatbot** available globally or linked directly to specific documents for contextual learning.
-  - Detailed post-exam review, analyzing exactly which questions were right/wrong and the exact time spent per question.
-  - View assignment grades and instructor feedback.
-  - Profile section indicating academic details.
+1. **Authentication:** NextAuth supplies the session. Protected API handlers check the session and role; resource-specific handlers also check ownership or audience restrictions.
+2. **Exams and coursework:** Dashboards call API routes to read or update exams, attempts, assignments, submissions, announcements, and materials through Mongoose models.
+3. **Document assistance:** Uploaded documents are parsed into chunks. The local embedding model generates 384-dimensional vectors, Atlas retrieves relevant chunks, and the Groq API generates an answer using the retrieved context. First use may download model files and initialize the embedding pipeline.
+4. **Online classes:** EduHelp stores a manually supplied Google Meet URL and controls when eligible students can retrieve it. Google handles the actual call, admission, and host controls; video does not pass through the Next.js server.
+5. **Maintenance:** Reminder and cleanup endpoints manage notifications and expired data. Scheduling differs between local/container and serverless deployments; see [Scheduled jobs](#scheduled-jobs-and-data-lifecycle).
 
-## Tech Stack
+### Data model
 
-- **Frontend/Backend**: Next.js 16 (App Router, API Routes)
-- **Database**: MongoDB (Mongoose, `$text` index, Atlas Vector Search)
-- **Authentication**: NextAuth.js
-- **AI LLM & RAG**: Groq API + `@xenova/transformers` (Local Embeddings) + `tesseract.js` (OCR) + `officeparser` + `pdf-parse`
-- **Cloud Storage**: Cloudinary
-- **Styling**: Vanilla CSS with modern, glassmorphic UI design
+| Domain | Models |
+| --- | --- |
+| Identity | `User` |
+| Assessment | `Exam`, `ExamAttempt` |
+| Coursework | `Assignment`, `AssignmentSubmission` |
+| Learning resources | `Content`, `DocumentChunk` |
+| Communication | `Announcement`, `Message`, `Notification` |
+| Live lessons | `OnlineClass` |
 
-## Prerequisites
+## Technology stack
 
-Before you begin, ensure you have the following installed:
-- [Node.js](https://nodejs.org/en/) (v22.14 or higher)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (For local containerized deployment)
-- A MongoDB cluster (e.g., [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
-- A [Groq API Key](https://console.groq.com/keys)
-- A [Cloudinary Account](https://cloudinary.com) (Cloud Name, API Key, API Secret)
+| Layer | Technology |
+| --- | --- |
+| Application | Next.js 16 App Router, React 19, TypeScript |
+| Authentication | NextAuth.js, bcryptjs |
+| Database | MongoDB, Mongoose, Atlas Vector Search |
+| AI generation | Groq API |
+| Embeddings | `@xenova/transformers`, `Xenova/all-MiniLM-L6-v2` |
+| Document processing | `pdf-parse`, `officeparser`, Tesseract.js, `pdf2pic` |
+| File hosting | Cloudinary |
+| Online meetings | Google Meet links; no Google API integration required |
+| Styling | CSS theme tokens and glass surfaces; locally bundled Geist fonts |
+| Verification | ESLint, TypeScript, Vitest, Testing Library, Playwright, axe |
+| Delivery | GitHub Actions; Docker or Vercel deployment |
 
-## Setup Instructions
+Exact dependency versions are recorded in [package.json](package.json) and [package-lock.json](package-lock.json).
 
-1. **Clone the repository**:
-   ```bash
-   git clone <your-github-repo-url>
-   cd exam-system
-   ```
+## Project structure
 
-2. **Configure Environment Variables**:
-   Create a `.env.local` file in the root directory and add the following variables:
-   ```env
-   # Your MongoDB Connection String
-   MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<database>?retryWrites=true&w=majority
-   
-   # NextAuth Config (Use `openssl rand -base64 32` for Secret)
-   NEXTAUTH_SECRET=your_random_secret_string
-   NEXTAUTH_URL=http://localhost:3000
+```text
+exam-system/
+|-- app/
+|   |-- api/                  # Authentication, coursework, classes, and maintenance APIs
+|   |-- class/[meetingId]/    # Authorized Google Meet launch page
+|   |-- dashboard/            # Role-based workspace entry
+|   |-- exam/[id]/            # Exam-taking interface
+|   |-- login/ and register/  # Account access
+|   `-- globals.css           # Theme tokens and shared styles
+|-- components/               # Dashboard sections and reusable UI
+|-- lib/                      # Database, parsing, embeddings, theme, and class helpers
+|-- models/                   # Mongoose schemas
+|-- scripts/                  # Maintenance utilities and isolated browser-test server
+|-- tests/                    # Unit, component, API, and browser tests
+|-- .github/workflows/ci.yml   # Quality checks and browser CI
+|-- instrumentation.ts        # Internal reminder polling
+|-- docker-compose.yml        # Local container configuration
+`-- vercel.json               # Serverless cleanup schedule
+```
 
-   # Groq API Key for AI Exam Parsing
-   GROQ_API_KEY=gsk_your_groq_api_key_here
+## Getting started
 
-   # Cloudinary Keys for File Uploads
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
+### Prerequisites
 
+- Node.js **22.14 or newer**, with npm.
+- A MongoDB connection. Atlas with Vector Search is needed for the semantic-search and document-retrieval features.
+- Cloudinary credentials for file uploads and Groq credentials for AI generation.
+- Docker Desktop only if using [Docker deployment](#docker).
+- A Google account to create and host Meet lessons. EduHelp does not need Google API credentials.
 
-   # Cron Job Security (For Vercel)
-   CRON_SECRET=your_secure_cron_password
-   ```
+### Run locally
 
-3. **Configure Atlas Vector Search**:
-   For the AI features to work, you must create **two** Vector Search Indexes in your MongoDB Atlas dashboard.
-   
-   **Index 1: For the AI Chatbot (RAG)**
-   - Go to MongoDB Atlas -> **Atlas Search**.
-   - Click **Create Search Index** and choose **Atlas Vector Search** (JSON Editor).
-   - Select your database and the `documentchunks` collection.
-   - Name the index exactly: **`VectorSearchIndex`**
-   - Paste the following configuration:
-   ```json
-   {
-     "fields": [
-       {
-         "type": "vector",
-         "path": "embedding",
-         "numDimensions": 384,
-         "similarity": "cosine"
-       },
-       {
-         "type": "filter",
-         "path": "contentId"
-       }
-     ]
-   }
-   ```
-   
-   **Index 2: For Global Semantic Search (Materials)**
-   - Click **Create Search Index** again and choose **Atlas Vector Search** (JSON Editor).
-   - Select your database and the `contents` collection.
-   - Name the index exactly: **`ContentVectorIndex`**
-   - Paste the following configuration:
-   ```json
-   {
-     "fields": [
-       {
-         "numDimensions": 384,
-         "path": "embedding",
-         "similarity": "cosine",
-         "type": "vector"
-       },
-       {
-         "path": "targetDepartment",
-         "type": "filter"
-       },
-       {
-         "path": "targetBatch",
-         "type": "filter"
-       },
-       {
-         "path": "expireAt",
-         "type": "filter"
-       },
-       {
-         "path": "course",
-         "type": "filter"
-       }
-     ]
-   }
-   ```
-   - Wait until both indexes are `Active`.
+From the cloned repository's `exam-system` directory:
 
-## Docker Deployment (Local)
-The application is fully containerized and uses Next.js standalone builds for extreme optimization.
+```bash
+npm ci
+```
 
-1. Build and run the container in detached mode:
-   ```bash
-   docker compose up -d --build
-   ```
-2. Access the application at [http://localhost:3000](http://localhost:3000).
+Create `.env.local` using the placeholders in [Environment configuration](#environment-configuration), then configure the [vector indexes](#atlas-vector-search-setup) if using AI retrieval.
 
-*(Note: To stop the container, run `docker compose down`)*
+```bash
+npm run dev
+```
 
-## Vercel Deployment (Production)
+Open [http://localhost:3000](http://localhost:3000). Register an instructor or student account to access the appropriate dashboard.
 
-This application is natively optimized for Vercel's serverless infrastructure.
+For a local production build:
 
-1. Push your code to a GitHub repository.
-2. Log into [Vercel](https://vercel.com), click **Add New Project**, and import your repository.
-3. In the Configuration tab, expand **Environment Variables** and paste all the keys from your `.env.local` file.
-4. Click **Deploy**. Vercel will automatically build the app, set up the midnight Cron Job via `vercel.json`, and assign a free SSL-secured URL.
+```bash
+npm run build
+npm start
+```
 
-## Themes and automated checks
+Scanned-PDF conversion uses `pdf2pic`, which requires GraphicsMagick and Ghostscript on the runtime machine. Image OCR, document parsing, and external integrations should be checked in the intended deployment environment; see [Testing](TESTING.md).
 
-Choose System, Light, or Dark in the authentication or dashboard header. Your preference persists across visits. Fonts are bundled locally.
+## Environment configuration
 
-GitHub Actions runs quality checks and browser tests when you push or open a pull request. See [TESTING.md](TESTING.md) for commands, coverage boundaries, and reports, and [DESIGN.md](DESIGN.md) for UI conventions.
+Create `.env.local` in the application root. Keep real credentials out of source control and use the hosting provider's environment settings in production.
 
-## Online classes with Google Meet
+```env
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>
+NEXTAUTH_SECRET=replace-with-a-long-random-secret
+NEXTAUTH_URL=http://localhost:3000
 
-Online classes use instructor-provided Google Meet links. No video SDK, Google API key, OAuth integration, or ZegoCloud subscription is required.
+GROQ_API_KEY=your_groq_api_key
 
-1. In [Google Meet](https://meet.google.com/), choose **New meeting > Create a meeting for later** ([Google instructions](https://support.google.com/meet/answer/9302870)). Use the Google account that will host the lesson.
-2. In the instructor dashboard, choose **Schedule New Class**, paste the link, and set the schedule and optional department/batch restrictions. Standard links such as `https://meet.google.com/abc-defg-hij` are supported; query parameters are removed.
-3. Choose **Start Class** when ready, then **Open Google Meet**. Eligible students can join live classes from their dashboard. Google Meet opens in a new tab and manages admission, microphone, camera, screen sharing, and host controls.
-4. End the call in Google Meet, then choose **Mark class completed** in EduHelp. Completing an EduHelp class does not end the Google call or revoke a previously shared meeting link.
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
-For classes created before this migration, select **Add Meet link** (or **Edit Class**) and save a Google Meet URL before starting them. Old Zego credentials can be removed from deployment configuration; they are no longer used.
+CRON_SECRET=replace-with-a-separate-random-secret
 
-EduHelp checks instructor ownership and student audience restrictions before returning a live class link. Scheduled and completed class links are not returned to students. A shared Meet URL remains subject to Google's access controls.
+# Optional: disable the internal reminder timer in local/CI environments
+DISABLE_INTERNAL_CRON=true
+```
 
-Free personal Google accounts currently support up to 100 participants and a 60-minute group meeting limit; check [Google Meet plans and limits](https://workspace.google.com/products/meet/) for your account before scheduling longer lessons. Creating and hosting meetings requires a Google account. This integration does not automatically create meetings, sync Google Calendar, record attendance, or record calls.
+| Variable | Purpose |
+| --- | --- |
+| `MONGODB_URI` | Database connection string. |
+| `NEXTAUTH_SECRET` | Authentication signing/encryption secret. |
+| `NEXTAUTH_URL` | Public application origin; change to the HTTPS deployment URL in production. |
+| `GROQ_API_KEY` | AI exam parsing and assistant responses. |
+| `CLOUDINARY_*` | File uploads and asset management. |
+| `CRON_SECRET` | Authorization for protected maintenance requests. |
+| `DISABLE_INTERNAL_CRON` | Set to `true` to disable the non-Vercel reminder timer; omit to allow it. |
+
+Generate a random secret with Node.js:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
+```
+
+Google Meet does not require API keys or OAuth configuration. The removed ZegoCloud integration's credentials are no longer used.
+
+## Atlas Vector Search setup
+
+Create two **Vector Search** indexes in your Atlas database using its JSON editor. Names, collection names, dimensions, and filter fields must match the application queries. Wait for both indexes to become active before testing search.
+
+### Document assistant index
+
+Collection: `documentchunks`
+Index name: `VectorSearchIndex`
+
+```json
+{
+  "fields": [
+    {
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 384,
+      "similarity": "cosine"
+    },
+    {
+      "type": "filter",
+      "path": "contentId"
+    }
+  ]
+}
+```
+
+### Materials search index
+
+Collection: `contents`
+Index name: `ContentVectorIndex`
+
+```json
+{
+  "fields": [
+    {
+      "numDimensions": 384,
+      "path": "embedding",
+      "similarity": "cosine",
+      "type": "vector"
+    },
+    {
+      "path": "targetDepartment",
+      "type": "filter"
+    },
+    {
+      "path": "targetBatch",
+      "type": "filter"
+    },
+    {
+      "path": "expireAt",
+      "type": "filter"
+    },
+    {
+      "path": "course",
+      "type": "filter"
+    }
+  ]
+}
+```
+
+## User manual
+
+### Accounts and navigation
+
+1. Open **Sign up**, choose the appropriate role, and complete the required account details. Students should enter their academic details accurately because classes and coursework can be targeted by department and batch.
+2. Sign in to open the dashboard. Use its section navigation to switch between tasks.
+3. Choose **System**, **Light**, or **Dark** from **Color theme**. The preference persists in the browser and synchronizes across tabs.
+4. Use **Sign Out** when finished, especially on a shared computer. Browser password managers may store account details separately from EduHelp.
+
+### Instructor guide
+
+| Section | How to use it |
+| --- | --- |
+| **My Exams** | Create practice or scheduled tests, set questions and timing, or use supported document uploads for AI-assisted parsing. Review extracted questions and correct answers before publishing. Open exam analytics to review attempts and results. |
+| **Announcements** | Publish notices, choose audience filters, and add attachments where needed. |
+| **Assignments** | Set instructions, deadline, marks, and audience. Open submissions to review files, assign grades, and leave feedback. |
+| **Materials** | Upload documents or videos with course details. Keep titles, descriptions, and course names useful for browsing and search. |
+| **Classes** | Schedule a lesson and paste its Google Meet link. See the [class walkthrough](#online-classes-with-google-meet). |
+| **Messages** | Select a recipient, exchange messages, and review unread indicators. |
+| **Profile** | Review and update account details exposed by the profile form. |
+
+### Student guide
+
+| Section | How to use it |
+| --- | --- |
+| **Available Exams** | Open an eligible exam, read its instructions, and follow fullscreen prompts. Keep the exam tab active and submit before time runs out. |
+| **Given Exams** | Review completed attempts, scores, question outcomes, and recorded time per question. |
+| **Announcements** | Read notices assigned to your academic cohort and open attachments. |
+| **Assignments** | Read instructions, upload the required submission before the deadline, and return later for grades and feedback. |
+| **Materials** | Browse course folders, search for resources, open documents or videos, and use the document assistant where available. Verify generated answers against the material. |
+| **Classes** | Check upcoming lessons. Once the instructor starts one, open its class page and choose **Open Google Meet**. |
+| **Messages / Profile** | Contact instructors and keep academic details current. |
+
+Exam answers may be cached in the current browser for recovery after a connection loss. Reconnect using the same browser and check that the submission is confirmed; avoid clearing browser storage while an attempt is pending.
+
+### Online classes with Google Meet
+
+1. In [Google Meet](https://meet.google.com/), choose **New meeting > Create a meeting for later**. Use the account that will host the lesson. See [Google's meeting instructions](https://support.google.com/meet/answer/9302870).
+2. In the instructor dashboard, choose **Classes > Schedule New Class**, paste the link, and set the schedule and optional department/batch restrictions.
+3. Use a standard code URL such as `https://meet.google.com/abc-defg-hij`. EduHelp removes query parameters; `/new` and nickname/lookup URLs are not supported.
+4. Choose **Start Class**, then **Open Google Meet**. Eligible students can join from their dashboard once the class is live. The call opens in a new tab; the host may need to admit attendees.
+5. At the end, end the call in Google Meet and choose **Mark class completed** in EduHelp. Completing the EduHelp record does not end the Google call or revoke an already shared URL.
+
+For older classes, choose **Add Meet link** or **Edit Class** and save a valid URL before starting them. EduHelp checks instructor ownership and student audience restrictions before returning a live link; scheduled and completed class links are not returned to students.
+
+Google controls participant access and account-specific meeting limits. Check [Google Meet plans](https://workspace.google.com/products/meet/) when planning class size or duration. This integration does not create meetings automatically, sync calendars, record attendance, or record calls.
+
+## Development and testing
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server. |
+| `npm run lint` | Lint against the existing reviewed suppression baseline. |
+| `npm run typecheck` | Generate route types and check TypeScript. |
+| `npm test` | Unit, component, model, and API tests. |
+| `npm run test:coverage` | Tests with coverage reports. |
+| `npm run build` | Production build and TypeScript validation. |
+| `npm run test:e2e` | Browser tests against the isolated production server; build first. |
+| `npm run check` | Lint, types, coverage, and build; browser tests run separately. |
+
+For a first local browser run:
+
+```bash
+npx playwright install
+npm run build
+npm run test:e2e
+```
+
+GitHub Actions runs quality checks and browser tests on pushes and pull requests, and supports manual dispatch. Browser CI uses a version-matched Playwright container; browser steps set `HOME=/root` for Firefox compatibility. Reports are retained for 14 days. The workflow does not deploy, commit, or push code.
+
+See [TESTING.md](TESTING.md) for fixtures, coverage boundaries, Linux dependencies, reports, and CI troubleshooting. See [DESIGN.md](DESIGN.md) for theme tokens, accessibility conventions, and glass-panel behavior.
+
+## Deployment
+
+### Docker
+
+After configuring `.env.local`, run from the application directory:
+
+```bash
+docker compose up -d --build
+```
+
+Open [http://localhost:3000](http://localhost:3000). The Compose service loads `.env.local` and exposes port 3000; it does not provision MongoDB.
+
+To stop:
+
+```bash
+docker compose down
+```
+
+The Dockerfile uses a multi-stage Next.js standalone build. Verify native document-processing dependencies in the final runtime image before relying on scanned-PDF OCR.
+
+### Vercel
+
+1. Push your reviewed changes to your repository.
+2. Import the repository in Vercel. Set the root directory to `exam-system` if it is nested in the repository.
+3. Add the variables from [Environment configuration](#environment-configuration) through Vercel's settings. Set `NEXTAUTH_URL` to the deployed origin.
+4. Deploy and verify sign-in, uploads, exams, and classes. Check AI processing separately against your Atlas indexes and service credentials.
+5. Review [scheduled jobs](#scheduled-jobs-and-data-lifecycle): `vercel.json` declares cleanup, while reminders need a separate trigger in this environment.
+
+## Scheduled jobs and data lifecycle
+
+| Job | Trigger and purpose |
+| --- | --- |
+| `/api/cron/reminders` | The internal Node.js timer calls this every 60 seconds outside Vercel unless `DISABLE_INTERNAL_CRON=true`. Vercel deployments need an external scheduler if reminders are required. |
+| `/api/cron/cleanup` | `vercel.json` declares `0 0 * * *` (daily at 00:00 UTC). A local/container deployment needs a separate trigger for this endpoint. |
+| MongoDB retention indexes | Several models use expiration fields or TTL indexes, including message and online-class retention. Expiration timing depends on the model and MongoDB's background cleanup. |
+
+Reminder logic targets upcoming exams and assignment deadlines. Cleanup handles expired records and related Cloudinary assets/document chunks. Do not assume all cleanup happens immediately at expiration. Verify scheduler authorization and successful job responses in the target deployment; configuring `CRON_SECRET` alone does not prove a timer is sending the required credentials.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Database connection fails | Confirm `MONGODB_URI`, database user permissions, and network access from the runtime. |
+| Login works locally but fails after deployment | Confirm `NEXTAUTH_URL` matches the public HTTPS origin and `NEXTAUTH_SECRET` is configured. |
+| AI retrieval fails or gives no results | Confirm both Atlas index names and filter fields, uploaded document chunks, embedding model initialization, and Groq credentials. |
+| Scanned-PDF processing fails | Check GraphicsMagick/Ghostscript availability in the runtime, plus file-size and execution-time limits. |
+| Cannot start an older class | Select **Add Meet link**, save a standard Google Meet URL, then start the class. |
+| Student cannot see or join a lesson | Confirm department/batch targeting, any explicit student restrictions, and that the instructor has started the class. Google admission is handled separately. |
+| Completed class still has an active Google call | End the call in Google Meet; EduHelp completion updates only the class record. |
+| Browser CI fails before tests | Check the preflight logs, Playwright container/package version match, and `HOME=/root` in browser steps. See [TESTING.md](TESTING.md#github-actions). |
+| Reminders do not appear | Check deployment-specific scheduling, `DISABLE_INTERNAL_CRON`, endpoint authorization, and job logs. |
+
+## Documentation and references
+
+| Resource | What it contains |
+| --- | --- |
+| [Architecture](#architecture) | System diagram, application flows, and model overview. |
+| [User manual](#user-manual) | Role-specific workflows and the Google Meet walkthrough. |
+| [DESIGN.md](DESIGN.md) | Cyan palette, themes, glassmorphism, accessibility, and design references. |
+| [TESTING.md](TESTING.md) | Test commands, CI behavior, reports, and known verification boundaries. |
+| [package.json](package.json) | Available scripts and dependencies. |
+| [CI workflow](.github/workflows/ci.yml) | Automated quality and browser jobs. |
+| [Dockerfile](Dockerfile) / [Compose configuration](docker-compose.yml) | Container build and local service setup. |
+| [Vercel configuration](vercel.json) | Declared cleanup schedule. |
