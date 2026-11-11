@@ -22,7 +22,7 @@ env:
 jobs:
   quality:
     name: Lint, types and unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -42,8 +42,12 @@ jobs:
           retention-days: 14
   browsers:
     name: Production build and browser tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
+    container:
+      # Must match @playwright/test in package-lock.json. Includes browsers and OS libraries.
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
+      options: --ipc=host
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,9 +55,23 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 5
+      - name: Verify preinstalled browsers
+        timeout-minutes: 1
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, firefox, webkit } from '@playwright/test';
+          import { existsSync } from 'node:fs';
+          for (const browser of [chromium, firefox, webkit]) {
+            const executable = browser.executablePath();
+            if (!existsSync(executable)) throw new Error(`Missing ${browser.name()} executable: ${executable}. Match the CI container image to the locked Playwright version.`);
+            console.log(`${browser.name()}: ${executable}`);
+          }
+          NODE
       - run: npm run build
+        timeout-minutes: 8
       - run: npm run test:e2e
+        timeout-minutes: 10
       - uses: actions/upload-artifact@v4
         if: always()
         with:
