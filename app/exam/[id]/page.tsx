@@ -345,9 +345,9 @@ export default function ExamPage() {
       {/* Warning Overlay (when in fullscreen) */}
       {warningMessage && isFullscreen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#1e1e1e', padding: '3rem', borderRadius: '1rem', border: '2px solid var(--danger)', maxWidth: '500px', textAlign: 'center' }}>
+          <div style={{ background: 'var(--surface)', padding: '3rem', borderRadius: '1rem', border: '2px solid var(--danger)', maxWidth: '500px', textAlign: 'center' }}>
             <h2 style={{ color: 'var(--danger)', fontSize: '2rem', marginBottom: '1rem' }}>⚠️ Warning</h2>
-            <p style={{ color: '#fff', fontSize: '1.2rem', marginBottom: '2rem' }}>{warningMessage}</p>
+            <p style={{ color: 'var(--text-primary)', fontSize: '1.2rem', marginBottom: '2rem' }}>{warningMessage}</p>
             {!warningMessage.includes("auto-submitted") ? (
               <button className="btn-primary" onClick={() => setWarningMessage("")}>I Understand</button>
             ) : (
@@ -413,9 +413,9 @@ export default function ExamPage() {
                   padding: '1rem 1.5rem',
                   borderRadius: '0.5rem',
                   border: isSelected ? '2px solid var(--primary)' : '1px solid var(--surface-border)',
-                  background: isSelected ? 'rgba(79, 70, 229, 0.1)' : 'rgba(0,0,0,0.2)',
+                  background: isSelected ? 'rgba(79, 70, 229, 0.1)' : 'var(--surface-muted)',
                   color: isSelected ? '#fff' : 'var(--text-secondary)',
-                  transition: 'all 0.2s',
+                  transition: 'background-color 140ms ease',
                   fontSize: '1rem'
                 }}
               >

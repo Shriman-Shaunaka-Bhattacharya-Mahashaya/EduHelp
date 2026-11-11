@@ -122,7 +122,7 @@ export default function StudentAssignments() {
               const deadlinePassed = assign.deadline ? new Date() > new Date(assign.deadline) : false;
               
               return (
-                <div key={assign._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+                <div key={assign._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{assign.title}</h3>
                   <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '1rem' }}>{assign.courseName}</div>
                   
@@ -132,7 +132,7 @@ export default function StudentAssignments() {
                     <div style={{ color: 'var(--danger)' }}><strong>⏳ Auto-deletes on:</strong> {assign.expireAt ? new Date(assign.expireAt).toLocaleString() : "Never"}</div>
                   </div>
 
-                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                  <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                     <ReactMarkdown>{assign.description}</ReactMarkdown>
                   </div>
 
@@ -153,7 +153,7 @@ export default function StudentAssignments() {
                       </div>
                     ) : (
                       <>
-                        <input type="file" onChange={e => handleFileChange(assign._id, e.target.files?.[0] || null)} style={{ padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', color: '#fff' }} />
+                        <input type="file" onChange={e => handleFileChange(assign._id, e.target.files?.[0] || null)} style={{ padding: '0.75rem', background: 'var(--surface-muted)', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', color: 'var(--text-primary)' }} />
                         {uploadState[assign._id]?.error && <div style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{uploadState[assign._id].error}</div>}
                         <button className="btn-primary" onClick={() => handleSubmit(assign._id)} disabled={uploadState[assign._id]?.loading} style={{ alignSelf: 'flex-start' }}>
                           {uploadState[assign._id]?.loading ? "Uploading..." : "Submit Work"}
@@ -175,7 +175,7 @@ export default function StudentAssignments() {
               const deadlinePassed = assign.deadline ? new Date() > new Date(assign.deadline) : false;
 
               return (
-                <div key={assign._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+                <div key={assign._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{assign.title}</h3>
@@ -183,11 +183,11 @@ export default function StudentAssignments() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       {sub.marksAwarded !== undefined && sub.marksAwarded !== null ? (
-                        <div style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
                           Score: {sub.marksAwarded} {assign.maxMarks ? `/ ${assign.maxMarks}` : ''}
                         </div>
                       ) : (
-                        <div style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
+                        <div style={{ background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', padding: '0.5rem 1rem', borderRadius: '2rem', fontWeight: 'bold' }}>
                           Under Review
                         </div>
                       )}

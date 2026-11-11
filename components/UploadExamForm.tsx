@@ -114,7 +114,7 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
       {error && <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{error}</div>}
       {success && <div style={{ color: 'var(--success)', padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '0.5rem', border: '1px solid rgba(16, 185, 129, 0.2)' }}>{success}</div>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Course Name *</label>
           <input type="text" name="courseName" required value={formData.courseName} onChange={handleChange} placeholder="e.g. Intro to Data Structures" />
@@ -125,7 +125,7 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Exam Type *</label>
           <select name="type" required value={formData.type} onChange={handleChange}>
@@ -133,7 +133,7 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
             <option value="scheduled">Scheduled Test (Single Attempt, specific time)</option>
           </select>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: formData.type === "scheduled" ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
           {formData.type === "scheduled" && (
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Scheduled For *</label>
@@ -147,7 +147,7 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Target Department (Optional)</label>
           <select name="targetDepartment" value={formData.targetDepartment} onChange={handleChange}>
@@ -173,10 +173,10 @@ export default function UploadExamForm({ onUploadSuccess }: { onUploadSuccess: (
           style={{ 
             width: '100%', 
             padding: '0.75rem', 
-            background: 'rgba(0,0,0,0.2)', 
+            background: 'var(--surface-muted)',
             border: '1px solid var(--surface-border)', 
             borderRadius: '0.5rem', 
-            color: '#fff' 
+            color: 'var(--text-primary)'
           }}
         />
       </div>

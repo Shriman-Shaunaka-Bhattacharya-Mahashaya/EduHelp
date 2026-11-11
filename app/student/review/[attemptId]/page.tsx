@@ -94,7 +94,7 @@ export default function StudentReviewPage() {
               </div>
               <div style={{ width: '1px', background: 'var(--surface-border)' }}></div>
               <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff' }}>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {formatTime(totalTimeTaken)}
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Total Time Taken</div>
@@ -122,7 +122,7 @@ export default function StudentReviewPage() {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {q.options.map((opt: string, optIdx: number) => {
-                      let bgColor = 'rgba(0,0,0,0.2)';
+                      let bgColor = 'var(--surface-muted)';
                       let borderColor = 'var(--surface-border)';
                       let textColor = 'var(--text-secondary)';
 

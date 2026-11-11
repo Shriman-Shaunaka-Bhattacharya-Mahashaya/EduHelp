@@ -125,7 +125,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
         attachmentData = {
           filename: attachmentFile.name,
           url: result.secure_url,
-          publicId: result.public_id
+          publicId: result.public_id,
+          resourceType: result.resource_type || 'raw'
         };
       } catch (uploadErr) {
         return NextResponse.json({ message: 'Cloudinary upload failed' }, { status: 500 });

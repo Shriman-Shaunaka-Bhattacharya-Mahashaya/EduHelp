@@ -183,28 +183,28 @@ export default function ManageContent() {
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <label className="label">Title</label>
-              <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} required placeholder="E.g., Chapter 1 Notes" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+              <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} required placeholder="E.g., Chapter 1 Notes" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
             </div>
             <div style={{ flex: 1 }}>
               <label className="label">Course / Subject</label>
-              <input type="text" className="input" value={course} onChange={e => setCourse(e.target.value)} required placeholder="E.g., Mathematics 101" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+              <input type="text" className="input" value={course} onChange={e => setCourse(e.target.value)} required placeholder="E.g., Mathematics 101" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
             </div>
           </div>
 
           <div>
             <label className="label">Tags / Keywords (Comma separated)</label>
-            <input type="text" className="input" value={tags} onChange={e => setTags(e.target.value)} placeholder="E.g., calculus, mid-term, important" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+            <input type="text" className="input" value={tags} onChange={e => setTags(e.target.value)} placeholder="E.g., calculus, mid-term, important" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
           </div>
 
           <div>
             <label className="label">Description / Context (Markdown Supported)</label>
-            <textarea className="input" rows={4} value={description} onChange={e => setDescription(e.target.value)} required placeholder="Provide some context about this document..." style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontFamily: 'monospace' }} />
+            <textarea className="input" rows={4} value={description} onChange={e => setDescription(e.target.value)} required placeholder="Provide some context about this document..." style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)', fontFamily: 'monospace' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <label className="label">Target Department (Optional)</label>
-              <select className="input" value={targetDepartment} onChange={e => setTargetDepartment(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }}>
+              <select className="input" value={targetDepartment} onChange={e => setTargetDepartment(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }}>
                 <option value="">All Departments</option>
                 <option value="Computer Science">Computer Science</option>
                 <option value="Information Technology">Information Technology</option>
@@ -214,13 +214,13 @@ export default function ManageContent() {
             </div>
             <div style={{ flex: 1 }}>
               <label className="label">Target Batch / Grad Year (Optional)</label>
-              <input type="number" className="input" value={targetBatch} onChange={e => setTargetBatch(e.target.value)} placeholder="E.g., 2026" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+              <input type="number" className="input" value={targetBatch} onChange={e => setTargetBatch(e.target.value)} placeholder="E.g., 2026" style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
             </div>
           </div>
           
           <div>
             <label className="label">Auto-delete Date (Default: 6 months)</label>
-            <input type="datetime-local" className="input" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)', color: '#fff' }} />
+            <input type="datetime-local" className="input" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--surface-border)', background: 'var(--surface-muted)', color: 'var(--text-primary)' }} />
           </div>
 
           <div>
@@ -230,7 +230,7 @@ export default function ManageContent() {
               ref={fileInputRef}
               accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,video/mp4,video/webm,video/ogg"
               onChange={(e) => setAttachment(e.target.files?.[0] || null)}
-              style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'white' }}
+              style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }}
               required={!editingId}
             />
           </div>
@@ -275,14 +275,14 @@ export default function ManageContent() {
             {courses.length === 0 ? (
               <p style={{ color: 'var(--text-secondary)' }}>You haven't uploaded any content for any courses yet.</p>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '1.5rem' }}>
                 {courses.map((courseName) => (
                   <div 
                     key={courseName}
                     onClick={() => setSelectedCourse(courseName)}
                     style={{ 
                       padding: '2rem', 
-                      background: 'rgba(0,0,0,0.3)', 
+                      background: 'var(--surface-muted)',
                       border: '1px solid var(--primary)', 
                       borderRadius: '1rem', 
                       cursor: 'pointer',
@@ -319,7 +319,7 @@ export default function ManageContent() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {contents.map((c: any) => (
-              <div key={c._id} style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+              <div key={c._id} style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
@@ -329,20 +329,20 @@ export default function ManageContent() {
                     {c.tags && c.tags.length > 0 && (
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                         {c.tags.map((tag: string, i: number) => (
-                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '1rem' }}>#{tag}</span>
+                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: 'var(--surface-border)', borderRadius: '1rem' }}>#{tag}</span>
                         ))}
                       </div>
                     )}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                      {c.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', borderRadius: '1rem' }}>{c.targetDepartment}</span>}
-                      {c.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', borderRadius: '1rem' }}>Batch {c.targetBatch}</span>}
+                      {c.targetDepartment && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: 'var(--info)', borderRadius: '1rem' }}>{c.targetDepartment}</span>}
+                      {c.targetBatch && <span style={{ fontSize: '0.75rem', padding: '0.1rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', borderRadius: '1rem' }}>Batch {c.targetBatch}</span>}
                     </div>
                   </div>
                 </div>
 
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+                <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                   <ReactMarkdown>{c.description}</ReactMarkdown>
                 </div>
                 

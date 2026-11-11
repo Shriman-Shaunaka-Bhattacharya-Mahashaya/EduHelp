@@ -6,10 +6,10 @@ import UploadExamForm from "./UploadExamForm";
 
 function ExamCard({ exam, router, onEdit, onDelete }: { exam: any, router: any, onEdit: (e: any) => void, onDelete: (id: string) => void }) {
   return (
-    <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
+    <div style={{ padding: '1.5rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#fff', marginBottom: '0.25rem' }}>{exam.courseName}</h3>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{exam.courseName}</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
             {exam.questions.length} Questions • {exam.type === 'scheduled' ? `Scheduled Test` : `Practice Test`}
           </p>
@@ -52,7 +52,7 @@ function ExamCard({ exam, router, onEdit, onDelete }: { exam: any, router: any, 
         </button>
         <button
           className="btn-outline"
-          style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', background: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }}
+          style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', background: 'var(--primary-solid)', color: '#fff', borderColor: 'var(--primary)' }}
           onClick={() => router.push(`/instructor/analytics/${exam._id}`)}
         >
           Analytics
@@ -201,7 +201,7 @@ export default function ExamList() {
 
       {/* Scheduled Exams Section */}
       <div>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>
           Scheduled Exams
         </h2>
         <div style={{ display: 'grid', gap: '1rem' }}>
@@ -225,7 +225,7 @@ export default function ExamList() {
 
       {/* Practice Exams Section */}
       <div>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: '#fff' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', color: 'var(--text-primary)' }}>
           Practice Exams
         </h2>
         <div style={{ display: 'grid', gap: '1rem' }}>
@@ -258,34 +258,34 @@ export default function ExamList() {
             <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label className="label">Course / Exam Name</label>
-                <input className="input" type="text" required value={editingExam.courseName} onChange={e => setEditingExam({...editingExam, courseName: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }} />
+                <input className="input" type="text" required value={editingExam.courseName} onChange={e => setEditingExam({...editingExam, courseName: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} />
               </div>
               
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
                   <label className="label">Type</label>
-                  <select className="input" value={editingExam.type} onChange={e => setEditingExam({...editingExam, type: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }}>
+                  <select className="input" value={editingExam.type} onChange={e => setEditingExam({...editingExam, type: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }}>
                     <option value="practice">Practice Exam</option>
                     <option value="scheduled">Scheduled Exam</option>
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="label">Duration (Minutes)</label>
-                  <input className="input" type="number" required min={1} value={editingExam.durationMinutes} onChange={e => setEditingExam({...editingExam, durationMinutes: parseInt(e.target.value)})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }} />
+                  <input className="input" type="number" required min={1} value={editingExam.durationMinutes} onChange={e => setEditingExam({...editingExam, durationMinutes: parseInt(e.target.value)})} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} />
                 </div>
               </div>
 
               {editingExam.type === 'scheduled' && (
                 <div>
                   <label className="label">Scheduled For</label>
-                  <input className="input" type="datetime-local" required value={editingExam.scheduledFor ? new Date(editingExam.scheduledFor).toISOString().slice(0, 16) : ""} onChange={e => setEditingExam({...editingExam, scheduledFor: new Date(e.target.value).toISOString()})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }} />
+                  <input className="input" type="datetime-local" required value={editingExam.scheduledFor ? new Date(editingExam.scheduledFor).toISOString().slice(0, 16) : ""} onChange={e => setEditingExam({...editingExam, scheduledFor: new Date(e.target.value).toISOString()})} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} />
                 </div>
               )}
 
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
                   <label className="label">Target Department (Optional)</label>
-                  <select className="input" value={editingExam.targetDepartment || ""} onChange={e => setEditingExam({...editingExam, targetDepartment: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }}>
+                  <select className="input" value={editingExam.targetDepartment || ""} onChange={e => setEditingExam({...editingExam, targetDepartment: e.target.value})} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }}>
                     <option value="">All Departments</option>
                     <option value="Computer Science">Computer Science</option>
                     <option value="Information Technology">Information Technology</option>
@@ -295,13 +295,13 @@ export default function ExamList() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label className="label">Target Batch (Optional)</label>
-                  <input className="input" type="number" placeholder="2026" value={targetBatch} onChange={e => setTargetBatch(Number(e.target.value))} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }} />
+                  <input className="input" type="number" placeholder="2026" value={targetBatch} onChange={e => setTargetBatch(Number(e.target.value))} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} />
                 </div>
               </div>
               
               <div>
                 <label className="label">Auto-delete Date (Optional)</label>
-                <input className="input" type="datetime-local" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: '#fff' }} />
+                <input className="input" type="datetime-local" value={expireAt} onChange={e => setExpireAt(e.target.value)} style={{ width: '100%', padding: '0.75rem', background: 'var(--surface-muted)', border: '1px solid var(--surface-border)', borderRadius: '0.5rem', color: 'var(--text-primary)' }} />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>

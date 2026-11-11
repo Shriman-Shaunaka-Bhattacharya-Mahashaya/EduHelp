@@ -44,8 +44,8 @@ export async function extractTextFromBuffer(buffer: Buffer, filename: string): P
       
       for (let page = 1; page <= maxPages; page++) {
         try {
-          const resolve = await convert(page, { responseType: "image" });
-          // The resolve returns base64 image if responseType is "image"
+          const resolve = await convert(page, { responseType: "base64" });
+          // The resolve returns base64 image if responseType is "base64"
           const imgBuffer = Buffer.from(resolve.base64 as string, 'base64');
           const { data: { text } } = await Tesseract.recognize(imgBuffer, 'eng');
           fullText += text + "\n\n";
@@ -77,6 +77,9 @@ export async function extractTextFromBuffer(buffer: Buffer, filename: string): P
 }
 
 export function chunkText(text: string, maxTokens: number = 200, overlap: number = 50): string[] {
+  if (!Number.isFinite(maxTokens) || maxTokens < 1 || !Number.isFinite(overlap) || overlap < 0 || overlap >= maxTokens) {
+    throw new RangeError('Chunk size must be positive and overlap must be smaller than the chunk size');
+  }
   // A rough approximation: 1 token ~= 4 chars
   const maxChars = maxTokens * 4;
   const overlapChars = overlap * 4;
@@ -105,7 +108,7 @@ export function chunkText(text: string, maxTokens: number = 200, overlap: number
       chunks.push(chunkStr);
     }
     
-    i = end - overlapChars; // Move forward, but overlap
+    i = Math.max(i + 1, end - overlapChars); // Move forward, but overlap
     if (i < 0) i = 0; // Prevent infinite loops or negative indices
     if (end >= text.length) break;
   }

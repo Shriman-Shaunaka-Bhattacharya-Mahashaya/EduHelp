@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Available-success?style=for-the-badge)](https://edu-help-iota.vercel.app)
 
-A comprehensive, role-based Learning Management System (LMS) built with Next.js 15, React, and MongoDB. EduHelp goes far beyond standard exam portals by integrating an intelligent AI-driven RAG chatbot, global semantic vector search for educational materials, rich-text assignment grading, direct real-time messaging, and a strictly proctored anti-cheat examination environment into a single, cohesive academic workspace.
+A comprehensive, role-based Learning Management System (LMS) built with Next.js 16, React, and MongoDB. EduHelp goes far beyond standard exam portals by integrating an intelligent AI-driven RAG chatbot, global semantic vector search for educational materials, rich-text assignment grading, direct real-time messaging, and a strictly proctored anti-cheat examination environment into a single, cohesive academic workspace.
 
 ## Advanced Features
 
@@ -75,7 +75,7 @@ If a student's internet drops while taking an exam, their answers and time spent
 
 ## Tech Stack
 
-- **Frontend/Backend**: Next.js 15 (App Router, API Routes)
+- **Frontend/Backend**: Next.js 16 (App Router, API Routes)
 - **Database**: MongoDB (Mongoose, `$text` index, Atlas Vector Search)
 - **Authentication**: NextAuth.js
 - **AI LLM & RAG**: Groq API + `@xenova/transformers` (Local Embeddings) + `tesseract.js` (OCR) + `officeparser` + `pdf-parse`
@@ -85,7 +85,7 @@ If a student's internet drops while taking an exam, their answers and time spent
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
-- [Node.js](https://nodejs.org/en/) (v18 or higher)
+- [Node.js](https://nodejs.org/en/) (v22.14 or higher)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (For local containerized deployment)
 - A MongoDB cluster (e.g., [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
 - A [Groq API Key](https://console.groq.com/keys)
@@ -206,3 +206,9 @@ This application is natively optimized for Vercel's serverless infrastructure.
 2. Log into [Vercel](https://vercel.com), click **Add New Project**, and import your repository.
 3. In the Configuration tab, expand **Environment Variables** and paste all the keys from your `.env.local` file.
 4. Click **Deploy**. Vercel will automatically build the app, set up the midnight Cron Job via `vercel.json`, and assign a free SSL-secured URL.
+
+## Themes and automated checks
+
+Choose System, Light, or Dark in the authentication or dashboard header. Your preference persists across visits. Fonts are bundled locally.
+
+GitHub Actions runs quality checks and browser tests when you push or open a pull request. See [TESTING.md](TESTING.md) for commands, coverage boundaries, and reports, and [DESIGN.md](DESIGN.md) for UI conventions.

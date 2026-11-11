@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import InstructorDashboard from "@/components/InstructorDashboard";
 import StudentDashboard from "@/components/StudentDashboard";
 import NotificationBell from "@/components/NotificationBell";
+import { ThemeSwitcher } from "@/components/ThemeProvider";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -28,25 +30,29 @@ export default function Dashboard() {
   if (!session) return null;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>EduHelp Dashboard</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>
-            Welcome, <strong>{session.user?.name}</strong> ({session.user?.role})
-          </span>
+    <div className="dashboard-shell">
+      <header className="dashboard-header">
+        <Link href="/dashboard" className="brand"><span className="brand-mark" aria-hidden="true">e</span>EduHelp</Link>
+        <div className="dashboard-actions">
+          <span className="role-badge">{session.user.role}</span>
+          <ThemeSwitcher />
           <NotificationBell />
           <button className="btn-outline" onClick={() => signOut({ callbackUrl: '/login' })}>
             Sign Out
           </button>
         </div>
       </header>
-
+      <main id="main-content">
+      <div className="dashboard-intro">
+        <h1>Welcome back{session.user.name ? `, ${session.user.name.split(' ')[0]}` : ''}.</h1>
+        <p>{session.user.role === 'student' ? 'Your next chapter starts here. Pick up where you left off.' : 'A clear view of your classroom. Everything you need to keep learning moving.'}</p>
+      </div>
       {session.user?.role === 'student' ? (
         <StudentDashboard />
       ) : (
         <InstructorDashboard />
       )}
+      </main>
     </div>
   );
 }

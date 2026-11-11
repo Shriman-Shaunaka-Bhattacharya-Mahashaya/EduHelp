@@ -60,14 +60,14 @@ export default function UserProfile() {
           justifyContent: 'center',
           fontSize: '2.5rem',
           fontWeight: 'bold',
-          color: '#fff',
+          color: 'var(--text-primary)',
           marginBottom: '1.5rem',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+          boxShadow: '0 8px 16px var(--surface-muted)'
         }}>
           {initials}
         </div>
 
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '0.25rem', color: '#fff' }}>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>
           {profile.fullName}
         </h2>
         
@@ -77,7 +77,7 @@ export default function UserProfile() {
 
         <span style={{ 
           background: profile.role === 'instructor' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
-          color: profile.role === 'instructor' ? '#fcd34d' : '#93c5fd',
+          color: profile.role === 'instructor' ? 'var(--warning)' : 'var(--info)',
           padding: '0.25rem 1rem', 
           borderRadius: '2rem', 
           fontSize: '0.85rem',
@@ -89,43 +89,43 @@ export default function UserProfile() {
           {profile.role}
         </span>
 
-        <div style={{ width: '100%', borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', textAlign: 'left' }}>
+        <div style={{ width: '100%', borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1.5rem', textAlign: 'left' }}>
           
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+          <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Department</div>
-            <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.department || "N/A"}</div>
+            <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.department || "N/A"}</div>
           </div>
 
           {profile.role === 'student' && (
             <>
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+              <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Roll Number</div>
-                <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.rollNumber || "N/A"}</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.rollNumber || "N/A"}</div>
               </div>
               
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+              <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Registration Number</div>
-                <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.registrationNumber || "N/A"}</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.registrationNumber || "N/A"}</div>
               </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+              <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Graduation Year</div>
-                <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.graduationYear || "N/A"}</div>
+                <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.graduationYear || "N/A"}</div>
               </div>
 
               {profile.section && (
-                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+                <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Section</div>
-                  <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.section}</div>
+                  <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.section}</div>
                 </div>
               )}
             </>
           )}
 
           {profile.role === 'instructor' && (
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
+            <div style={{ background: 'var(--surface-muted)', padding: '1rem', borderRadius: '0.5rem' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Instructor ID</div>
-              <div style={{ fontSize: '1.1rem', color: '#fff', fontWeight: '500' }}>{profile.instructorId || "N/A"}</div>
+              <div style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: '500' }}>{profile.instructorId || "N/A"}</div>
             </div>
           )}
 
