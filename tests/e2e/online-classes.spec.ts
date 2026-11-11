@@ -17,6 +17,10 @@ for (const theme of ['light', 'dark']) {
     const link = page.getByRole('link', { name: 'Open Google Meet' });
     await expect(link).toHaveAttribute('href', 'https://meet.google.com/abc-defg-hij');
     await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveText('Open Google Meet');
+    await expect(link.locator('svg')).toBeVisible();
+    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expect(link).toHaveCSS('border-radius', '9.6px');
     await expect(page.getByRole('heading', { name: 'Algorithms lesson' })).toBeVisible();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

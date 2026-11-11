@@ -164,7 +164,9 @@ table { font-variant-numeric: tabular-nums; }
 .meeting-card h2 { font-size: 1.25rem; margin-bottom: .75rem; }
 .meeting-card p { line-height: 1.7; }
 .meeting-description { color: var(--text-secondary); margin-bottom: 2rem; white-space: pre-wrap; overflow-wrap: anywhere; }
-.meeting-join { display: inline-flex; gap: .75rem; margin: 1.5rem 0; }
+.meeting-join { display: inline-flex; align-items: center; justify-content: center; gap: .75rem; min-height: 44px; max-width: 100%; padding: .75rem 1.25rem; border: 1px solid rgba(236, 254, 255, .12); border-radius: .6rem; font-weight: 600; line-height: 1.5; text-align: center; margin: 1.5rem 0; }
+.meeting-join:hover { text-decoration: none; }
+.meeting-join svg { flex-shrink: 0; }
 .meeting-host-actions { border-top: 1px solid var(--surface-border); padding-top: 1.5rem; margin-top: 1.5rem; }
 .meeting-host-actions button { margin-top: 1rem; }
 .meeting-back { display: inline-block; margin-top: 2rem; color: var(--primary); }

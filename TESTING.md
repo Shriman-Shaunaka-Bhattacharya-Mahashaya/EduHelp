@@ -12,7 +12,7 @@ Use Node.js 22.14 or newer and install the lockfile with `npm ci`.
 | `npm run test:e2e` | Production browser tests; run the build first |
 | `npm run check` | Lint, types, coverage, and production build |
 
-Before the first browser run, run `npx playwright install` (Linux CI also uses `--with-deps`). Playwright starts an isolated production server on port 3100 and supplies test-only environment values. It never connects browser flows to your production database: API requests in the authenticated UI tests are intercepted with deterministic fixtures. Run browser tests with a free port 3100. HTML reports are written to `playwright-report/`; screenshots and failure traces are in `test-results/`.
+Before the first local browser run, run `npx playwright install` (local Linux machines may also need `--with-deps`). GitHub Actions uses the official Playwright container with browsers and system dependencies already installed. Playwright starts an isolated production server on port 3100 and supplies test-only environment values. It never connects browser flows to your production database: API requests in the authenticated UI tests are intercepted with deterministic fixtures. Run browser tests with a free port 3100. HTML reports are written to `playwright-report/`; screenshots and failure traces are in `test-results/`.
 
 ## What is covered
 
@@ -31,6 +31,10 @@ Before the first browser run, run `npx playwright install` (Linux CI also uses `
 `.github/workflows/ci.yml` runs on every push and pull request, and supports manual dispatch. It uses read-only repository permissions and requires no production secrets. The two jobs run quality/unit checks and production browser tests. Both upload reports for 14 days, including on failures. No deployment, commit, or push step is included.
 
 After pushing this configuration yourself, you can make the two job checks required in your GitHub branch protection/ruleset settings. A workflow alone reports failures; it does not prevent direct pushes.
+
+The runner is pinned to Ubuntu 24.04. Browser tests run in `mcr.microsoft.com/playwright:v1.65.0-noble`, avoiding runtime `apt` downloads and Ubuntu mirror DNS failures during `playwright install --with-deps`. Keep this image version aligned with the resolved `@playwright/test` version in `package-lock.json` when upgrading Playwright. The workflow checks for all three browser executables before building, and each browser-job command has a timeout. If registry or npm connectivity fails, the job still requires a rerun after connectivity recovers; no tests are skipped to hide infrastructure failures.
+
+The browser preflight and test steps set `HOME=/root` because the container runs as root. GitHub's default `/github/home` mount can be owned by another user, which prevents Firefox from starting. Preflight launches and closes Chromium, Firefox, and WebKit before the production build so browser startup failures stop the job immediately rather than repeating across tests and retries. Local home-directory settings are unchanged.
 
 ## Honest coverage boundaries
 
