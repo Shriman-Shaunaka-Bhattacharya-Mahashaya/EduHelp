@@ -1,4 +1,5 @@
 "use client";
+import ViewportOverlay from './ViewportOverlay';
 
 import { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
@@ -383,6 +384,7 @@ export default function ManageAssignments() {
 
       {/* Submissions Modal */}
       {viewingAssignment && (
+        <ViewportOverlay>
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '2rem' }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -435,6 +437,7 @@ export default function ManageAssignments() {
             )}
           </div>
         </div>
+        </ViewportOverlay>
       )}
     </div>
   );

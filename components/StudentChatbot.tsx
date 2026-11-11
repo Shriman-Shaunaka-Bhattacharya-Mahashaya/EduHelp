@@ -1,4 +1,5 @@
 "use client";
+import ViewportOverlay from './ViewportOverlay';
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
@@ -76,6 +77,7 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
   if (!isOpen) return null;
 
   return (
+    <ViewportOverlay>
     <div style={{
       position: 'fixed',
       bottom: '1rem',
@@ -154,5 +156,6 @@ export default function StudentChatbot({ contentId, contentTitle, onClose, isOpe
         </button>
       </div>
     </div>
+    </ViewportOverlay>
   );
 }
